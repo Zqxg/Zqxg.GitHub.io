@@ -102,5 +102,7 @@ theme: hexo-theme-maple
 # Deployment
 ## Docs: https://hexo.io/docs/one-command-deployment
 deploy:
-  type: ''
+  type: git
+  repository: git@github.com:Zqxg/Zqxg.github.io.git
+  branch: master
 
