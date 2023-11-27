@@ -15,7 +15,7 @@
 
 
 
-<title>goto的替代 | 小锅的窝</title>
+<title>GoGC的回收机制和混合写屏障 | 小锅的窝</title>
 
 
 
@@ -154,7 +154,7 @@
         </h2>
       </a>
       <div id="header-title" class="opacity-0 md:ml-2 md:mt-[0.1rem] text-xs font-medium whitespace-nowrap overflow-hidden overflow-ellipsis">
-        goto的替代
+        GoGC的回收机制和混合写屏障
       </div>
       <div class="flex-1"></div>
       <div class="flex items-center gap-3">
@@ -230,7 +230,7 @@
   <header class="overflow-hidden pt-6 pb-6 md:pt-12">
     <div class="pt-4 md:pt-6">
       <h1 id="article-title" class="text-[2rem] font-bold leading-snug mb-4 md:mb-6 md:text-[2.6rem]">
-        goto的替代
+        GoGC的回收机制和混合写屏障
       </h1>
       <div>
         <section class="flex items-center gap-3 text-sm">
@@ -241,18 +241,18 @@
           <span class="text-gray-400">·</span>
           <span class="flex items-center gap-1">
             <iconify-icon width="18" icon="ic:round-access-alarm" ></iconify-icon>
-            <span>1 min</span>
+            <span>4 min</span>
           </span>
           <span class="text-gray-400">·</span>
           <span class="flex items-center gap-1">
             <iconify-icon width="18" icon="icon-park-outline:font-search" ></iconify-icon>
-            <span>266 words</span>
+            <span>1.4k words</span>
           </span>
           
             <span class="text-gray-400">·</span>
             <span class="flex items-center gap-1">
               <iconify-icon width="16" icon="icon-park-outline:box" class="mr-2"></iconify-icon>
-              <a class="article-category-link" href="/categories/%E8%AF%BE%E7%A8%8B%E7%AC%94%E8%AE%B0/">课程笔记</a>
+              <a class="article-category-link" href="/categories/golang%E7%AC%94%E8%AE%B0/">golang笔记</a>
             </span>
           
         </section>
@@ -261,20 +261,77 @@
   </header>
   <!-- content -->
   <article class="post-content prose m-auto slide-enter-content dark:prose-invert">
-    <h3 id="一、介绍"><a href="#一、介绍" class="headerlink" title="一、介绍"></a>一、介绍</h3><p>goto语句也称为无条件转移语句，当执行到goto语句后，程序将跳转到标签位置。例如下图：</p>
-<p><img src="/2022/03/26/goto%E7%9A%84%E6%9B%BF%E4%BB%A3/goto1.png"></p>
-<h3 id="二、使用"><a href="#二、使用" class="headerlink" title="二、使用"></a>二、使用</h3><p>使用 goto语句在同一函数内进行 goto跳转时, goto的起点应是函数内一段小功能的结束处，goto跳转的目的 label处应是函数内另外一段小功能的开始处。</p>
-<h3 id="三、优缺点"><a href="#三、优缺点" class="headerlink" title="三、优缺点"></a>三、优缺点</h3><ol>
-<li>优点：使用goto语句，可以更改程序执行的正常顺序，因此可以跳转到程序的任何部分。</li>
-<li>缺点：</li>
+    <h2 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h2><ol>
+<li>GC是什么？为什么要有GC？</li>
+<li>基础概念</li>
+<li>golang的GC</li>
+<li>如何标记</li>
+<li>GoV1.3 标记清除法</li>
+<li>三色标记法</li>
+<li>插入写屏障</li>
+<li>删除写屏障</li>
+<li>混合写屏障</li>
 </ol>
+<h2 id="GC是什么？为什么要有GC？"><a href="#GC是什么？为什么要有GC？" class="headerlink" title="GC是什么？为什么要有GC？"></a>GC是什么？为什么要有GC？</h2><p><em>GC</em> 是 garbage collection 的缩写,意思是垃圾回收。</p>
 <ul>
-<li>使用goto语句，因为它会使程序逻辑非常复杂，不易阅读。</li>
-<li>使用goto使得分析和验证程序（尤其是涉及循环的程序）的正确性的任务非常困难。</li>
-<li>使用 goto语句只能将 goto跳转到同一函数内，而不能从一个函数里跳转到另外一个函数里。</li>
-<li>goto不能从一段复杂的执行状态中的位置跳转到另外一个位置</li>
+<li>GC是编程语言中提供的自动的内存管理机制，自动释放不需要的内存对象，让出存储器资源。</li>
+<li>GC过程中无需程序员手动执行。GC机制在现代<strong>很多编程语言</strong>都支持(Java/python/golang)，GC能力的性能与优劣也是不同语言之间对比度指标之一。</li>
 </ul>
-<h3 id="四、替换"><a href="#四、替换" class="headerlink" title="四、替换"></a>四、替换</h3><p>do while(1) 替换 goto</p>
+<p>前面说现在很多语言都有GC机制，但是在我们大一学的c++却是没有的一个标准库，所以在当时我们要自己创建内存空间和销毁，可以使我们更好了解底层原理。</p>
+<p>但是全部都要我们程序员自己造轮子，这也太麻烦了。且内存处理是开发人员容易出现问题的地方，所以现在很多语言都提供了自己的垃圾回收装置</p>
+<h2 id="基础概念"><a href="#基础概念" class="headerlink" title="基础概念"></a>基础概念</h2><p> <strong>一个标准进程的内存模型</strong></p>
+<ul>
+<li>code area（方法区）</li>
+<li>static area 静态变量</li>
+<li>heap (堆)</li>
+<li>stack (栈)<br><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc1.png"><br>golang程序，是一个进程</li>
+</ul>
+<ul>
+<li>一个进程对应着多个OS线程，又根据[[MPG模型]]，对应着很多个协程；</li>
+<li>对所有的goroutinue来说，heap可以看作是共享的区域</li>
+<li>但是每个goroutinue，都有只属于自己的stack</li>
+</ul>
+<p><strong>一般程序的内存管理</strong><br>stack会随着线程执行code area的stack frame，自动pop、push、remove；<br>stack里的变量、调用完毕，就随着出栈，自动销毁；<br>但是heap不会，heap内的对象，通常是用stack内或者其它heap对象内的指针变量，对heap内的对象进行操作；<br>这个也叫做对象引用；<br>垃圾回收，garbage collect，回收的就是heap的空间</p>
+<h2 id="如何标记"><a href="#如何标记" class="headerlink" title="如何标记"></a>如何标记</h2><p>在 GC 领域里，判断对象存活的主流思路是两个，「引用计数」和「可达性分析」。</p>
+<ol>
+<li><p> <strong>引用计数</strong><br>顾名思义，引用计数的思路就是给每个对象进行计数，每被其它对象引用一次，计数就 +1，引用失效后，计数就 -1。当计数器的数值为 0，就意味着它没有被使用，可以回收。</p>
+</li>
+<li><p><strong>可达性分析</strong><br>可达性分析的思路就是通过引用链路判断对象是否可被触达，如果能触达说明该对象当前正在被使用，不可回收;反之，没有触达到的对象则认为是无使用的，可以回收。</p>
+</li>
+</ol>
+<p>这个引用链路的结构类似于有向有环图，但是根节点不止一个，是一个集合，称之为 GCRoots。</p>
+<p>目前主流的 GC 机制大多用的是「可达性分析」这条路线，我们Golang 的GC机制也是如此。</p>
+<p>为什么引用计数不好用呢?<br>因为它有一个特别严重的问题：<strong>无法处理循环引用。</strong></p>
+<h2 id="清除-mark-and-sweep-算法"><a href="#清除-mark-and-sweep-算法" class="headerlink" title="清除(mark and sweep)算法"></a>清除(mark and sweep)算法</h2><p>主要的步骤：</p>
+<ul>
+<li>标记(Mark phase)</li>
+<li>清除(Sweep phase)</li>
+</ul>
+<h3 id="标记清除算法的具体步骤："><a href="#标记清除算法的具体步骤：" class="headerlink" title="标记清除算法的具体步骤："></a>标记清除算法的具体步骤：</h3><p><strong>第一步</strong>，暂停程序业务逻辑, 遍历gcRoot，分类出可达和不可达的对象，然后做上标记。<br><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc2.png"></p>
+<ul>
+<li>可达对象：从程序根节点出发，可以到达的对象 如1-2-3，4-7</li>
+<li>不可达的对象：反之 5 6</li>
+</ul>
+<p><strong>第二步</strong>, 开始标记，程序找出它所有可达的对象，并做上标记<br><strong>第三步</strong>,  标记完了之后，然后开始清除未标记的对象. 结果如下。<br><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc3.png"><br>操作非常简单，但是有一点需要额外注意：mark and sweep算法在执行的时候，需要程序暂停！<br>即 <code>STW(stop the world)</code>，STW的过程中，CPU不执行用户代码，全部用于垃圾回收，这个过程的影响很大，所以STW也是一些回收机制最大的难题和希望优化的点。所以在执行第三步的这段时间，程序会暂定停止任何工作，卡在那等待回收执行完毕。</p>
+<p><strong>第四步</strong>, 停止暂停，让程序继续跑。然后循环重复这个过程，直到process程序生命周期结束。</p>
+<p>以上便是标记-清除（mark and sweep）回收的算法。</p>
+<h3 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h3><p>标记清除算法明了，过程鲜明干脆，但是通过上面的步骤演示，我们也能发现它存在严重的问题：</p>
+<ul>
+<li>STW，stop the world；让程序暂停，程序出现卡顿 **(重要问题)**；</li>
+<li>标记需要扫描整个heap；</li>
+<li>清除数据会产生heap碎片。</li>
+</ul>
+<p>因为[[GC回收机制-01]]中提到了heap可以看作是所有的goroutinue共享的区域，因此我们需要扫描整个heap（heap碎片这个概念其实可以类比我们学习的操作系统中的内存碎片）</p>
+<p>Go V1.3版本之前：</p>
+<p><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc4.png"></p>
+<p>Go V1.3 做了简单的优化,将STW的步骤提前, 减少STW暂停的时间范围.</p>
+<p><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc5.png"></p>
+<p>但是无论怎么优化，Go V1.3都面临这个一个重要问题，就是<strong>mark-and-sweep 算法会暂停整个程序</strong> 。</p>
+<p>Go是如何面对并这个问题的呢？接下来G V1.5版本 就用<strong>三色并发标记法</strong>来优化这个问题.</p>
+<p>后面的内容为手写笔记</p>
+<h2 id="三色标记法"><a href="#三色标记法" class="headerlink" title="三色标记法"></a>三色标记法</h2><p><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc6.png"><br><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc7.png"></p>
+<h2 id="插入写屏障"><a href="#插入写屏障" class="headerlink" title="插入写屏障"></a>插入写屏障</h2><p><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc8.png"></p>
+<h2 id="删除写屏障-amp-混合写屏障"><a href="#删除写屏障-amp-混合写屏障" class="headerlink" title="删除写屏障&amp;混合写屏障"></a>删除写屏障&amp;混合写屏障</h2><p><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc9.png"><br><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc10.png"><br><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc11.png"></p>
 
   </article>
   <!-- tag -->
@@ -282,11 +339,11 @@
     
       
         <span class="bg-gray-100 dark:bg-gray-700 px-2 py-1 m-1 text-sm rounded-md transition-colors hover:bg-gray-200">
-          <a href="/tags/c/">c</a>
+          <a href="/tags/golang/">golang</a>
         </span>
       
         <span class="bg-gray-100 dark:bg-gray-700 px-2 py-1 m-1 text-sm rounded-md transition-colors hover:bg-gray-200">
-          <a href="/tags/c/">c++</a>
+          <a href="/tags/gc/">gc</a>
         </span>
       
     
@@ -295,13 +352,13 @@
   <div class="flex justify-between mt-12 pt-6 border-t border-gray-200">
     <div>
       
-        <a href="/2022/11/26/python%E7%88%AC%E8%99%AB/" class="text-sm text-gray-400 hover:text-gray-500 flex justify-center">
-          <iconify-icon width="20" icon="ri:arrow-left-s-line" data-inline="false"></iconify-icon>
-          python爬虫
-        </a>
-      
     </div>
     <div>
+      
+        <a href="/2023/09/24/jwt%E8%BA%AB%E4%BB%BD%E8%AE%A4%E8%AF%81/" class="text-sm text-gray-400 hover:text-gray-500 flex justify-center">
+          JWT身份认证
+          <iconify-icon width="20" icon="ri:arrow-right-s-line" data-inline="false"></iconify-icon>
+        </a>
       
     </div>
   </div>

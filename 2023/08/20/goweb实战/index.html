@@ -15,7 +15,7 @@
 
 
 
-<title>goto的替代 | 小锅的窝</title>
+<title>Go Web简单实战 | 小锅的窝</title>
 
 
 
@@ -154,7 +154,7 @@
         </h2>
       </a>
       <div id="header-title" class="opacity-0 md:ml-2 md:mt-[0.1rem] text-xs font-medium whitespace-nowrap overflow-hidden overflow-ellipsis">
-        goto的替代
+        Go Web简单实战
       </div>
       <div class="flex-1"></div>
       <div class="flex items-center gap-3">
@@ -230,7 +230,7 @@
   <header class="overflow-hidden pt-6 pb-6 md:pt-12">
     <div class="pt-4 md:pt-6">
       <h1 id="article-title" class="text-[2rem] font-bold leading-snug mb-4 md:mb-6 md:text-[2.6rem]">
-        goto的替代
+        Go Web简单实战
       </h1>
       <div>
         <section class="flex items-center gap-3 text-sm">
@@ -246,13 +246,13 @@
           <span class="text-gray-400">·</span>
           <span class="flex items-center gap-1">
             <iconify-icon width="18" icon="icon-park-outline:font-search" ></iconify-icon>
-            <span>266 words</span>
+            <span>386 words</span>
           </span>
           
             <span class="text-gray-400">·</span>
             <span class="flex items-center gap-1">
               <iconify-icon width="16" icon="icon-park-outline:box" class="mr-2"></iconify-icon>
-              <a class="article-category-link" href="/categories/%E8%AF%BE%E7%A8%8B%E7%AC%94%E8%AE%B0/">课程笔记</a>
+              <a class="article-category-link" href="/categories/golang%E7%AC%94%E8%AE%B0/">golang笔记</a>
             </span>
           
         </section>
@@ -261,20 +261,51 @@
   </header>
   <!-- content -->
   <article class="post-content prose m-auto slide-enter-content dark:prose-invert">
-    <h3 id="一、介绍"><a href="#一、介绍" class="headerlink" title="一、介绍"></a>一、介绍</h3><p>goto语句也称为无条件转移语句，当执行到goto语句后，程序将跳转到标签位置。例如下图：</p>
-<p><img src="/2022/03/26/goto%E7%9A%84%E6%9B%BF%E4%BB%A3/goto1.png"></p>
-<h3 id="二、使用"><a href="#二、使用" class="headerlink" title="二、使用"></a>二、使用</h3><p>使用 goto语句在同一函数内进行 goto跳转时, goto的起点应是函数内一段小功能的结束处，goto跳转的目的 label处应是函数内另外一段小功能的开始处。</p>
-<h3 id="三、优缺点"><a href="#三、优缺点" class="headerlink" title="三、优缺点"></a>三、优缺点</h3><ol>
-<li>优点：使用goto语句，可以更改程序执行的正常顺序，因此可以跳转到程序的任何部分。</li>
-<li>缺点：</li>
+    <h1 id="社区话题demo"><a href="#社区话题demo" class="headerlink" title="社区话题demo"></a>社区话题demo</h1><p>**此项目使用<code>Gin</code>+<code>Gorm</code>+<code>mysql</code> ，基于<code>RESTful API</code>实现的一个社区话题评论demo。</p>
+<p>项目仓库：<a target="_blank" rel="noopener" href="https://github.com/Zqxg/community_demo">Zqxg/community_demo (github.com)</a></p>
+<h2 id="需求描述"><a href="#需求描述" class="headerlink" title="需求描述"></a>需求描述</h2><ol>
+<li>支持发布帖子（增）</li>
+<li>支持删除帖子（删）</li>
+<li>帖子话题运行修改（改）</li>
+<li>展示话题（标题、文字描述）和回帖列表（查）</li>
 </ol>
 <ul>
-<li>使用goto语句，因为它会使程序逻辑非常复杂，不易阅读。</li>
-<li>使用goto使得分析和验证程序（尤其是涉及循环的程序）的正确性的任务非常困难。</li>
-<li>使用 goto语句只能将 goto跳转到同一函数内，而不能从一个函数里跳转到另外一个函数里。</li>
-<li>goto不能从一段复杂的执行状态中的位置跳转到另外一个位置</li>
+<li>话题和回帖数据使用mysql数据库</li>
 </ul>
-<h3 id="四、替换"><a href="#四、替换" class="headerlink" title="四、替换"></a>四、替换</h3><p>do while(1) 替换 goto</p>
+<h2 id="项目功能介绍"><a href="#项目功能介绍" class="headerlink" title="项目功能介绍"></a>项目功能介绍</h2><ul>
+<li>新增/删除/修改/查询 话题</li>
+<li>新增/删除/修改/查询 评论</li>
+</ul>
+<p>后续添加用户注册登录功能</p>
+<h2 id="接口文档"><a href="#接口文档" class="headerlink" title="接口文档"></a>接口文档</h2><p><a target="_blank" rel="noopener" href="https://console-docs.apipost.cn/preview/7cdfdb30d3008cd4/8f13a469d4be6339">接口文档</a></p>
+<h2 id="项目依赖"><a href="#项目依赖" class="headerlink" title="项目依赖"></a>项目依赖</h2><p>GO 1.20.1</p>
+<ol>
+<li>gin</li>
+<li>gorm</li>
+<li>mysql</li>
+<li>ini</li>
+</ol>
+<h2 id="项目结构"><a href="#项目结构" class="headerlink" title="项目结构"></a>项目结构</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">├── api       //api接口：错误信息、话题模块、评论模块</span><br><span class="line">├── cmd       //程序启动</span><br><span class="line">├── conf      //相关配置</span><br><span class="line">├── models    //初始化、结构体</span><br><span class="line">├── routes    //路由逻辑处理</span><br><span class="line">├── serializer//序列化</span><br><span class="line">└── service   //接口函数的实现</span><br></pre></td></tr></table></figure>
+
+<h2 id="评论模块功能实现"><a href="#评论模块功能实现" class="headerlink" title="评论模块功能实现"></a>评论模块功能实现</h2><p> 数据库表一对多（唯一外键）</p>
+<h2 id="开发问题"><a href="#开发问题" class="headerlink" title="开发问题"></a>开发问题</h2><ol>
+<li>数据库连接中断</li>
+</ol>
+<ul>
+<li>在设置数据库连接池前多写了个defer关闭了数据库，导致在创建方法前关闭了数据库</li>
+</ul>
+<ol start="2">
+<li>评论模块数据库操作有问题，无法对应到相关的帖子下。怀疑是数据库操作有问题。</li>
+</ol>
+<ul>
+<li>使用string查询条件<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">var posts []models.Post  </span><br><span class="line">err = models.DB.Where(&quot;topic_id = ?&quot;, tid).Find(&amp;posts).Error</span><br></pre></td></tr></table></figure>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2></li>
+</ul>
+<ol>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_34556414/article/details/130099428?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_baidulandingword~default-1-130099428-blog-107849953.235%5Ev38%5Epc_relevant_sort&spm=1001.2101.3001.4242.2&utm_relevant_index=4">(27条消息) Golang gorm 关联关系 一对多_golang 一对多查询_富士康质检员张全蛋的博客-CSDN博客</a></li>
+<li><a target="_blank" rel="noopener" href="https://gorm.io/zh_CN/docs/query.html#String-%E6%9D%A1%E4%BB%B6">查询 | GORM - The fantastic ORM library for Golang, aims to be developer friendly.</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/CocaineCong/TodoList">https://github.com/CocaineCong/TodoList</a></li>
+</ol>
 
   </article>
   <!-- tag -->
@@ -282,11 +313,23 @@
     
       
         <span class="bg-gray-100 dark:bg-gray-700 px-2 py-1 m-1 text-sm rounded-md transition-colors hover:bg-gray-200">
-          <a href="/tags/c/">c</a>
+          <a href="/tags/golang/">golang</a>
         </span>
       
         <span class="bg-gray-100 dark:bg-gray-700 px-2 py-1 m-1 text-sm rounded-md transition-colors hover:bg-gray-200">
-          <a href="/tags/c/">c++</a>
+          <a href="/tags/gin/">gin</a>
+        </span>
+      
+        <span class="bg-gray-100 dark:bg-gray-700 px-2 py-1 m-1 text-sm rounded-md transition-colors hover:bg-gray-200">
+          <a href="/tags/web/">web</a>
+        </span>
+      
+        <span class="bg-gray-100 dark:bg-gray-700 px-2 py-1 m-1 text-sm rounded-md transition-colors hover:bg-gray-200">
+          <a href="/tags/grom/">grom</a>
+        </span>
+      
+        <span class="bg-gray-100 dark:bg-gray-700 px-2 py-1 m-1 text-sm rounded-md transition-colors hover:bg-gray-200">
+          <a href="/tags/mysql/">mysql</a>
         </span>
       
     
@@ -295,13 +338,18 @@
   <div class="flex justify-between mt-12 pt-6 border-t border-gray-200">
     <div>
       
-        <a href="/2022/11/26/python%E7%88%AC%E8%99%AB/" class="text-sm text-gray-400 hover:text-gray-500 flex justify-center">
+        <a href="/2023/09/24/jwt%E8%BA%AB%E4%BB%BD%E8%AE%A4%E8%AF%81/" class="text-sm text-gray-400 hover:text-gray-500 flex justify-center">
           <iconify-icon width="20" icon="ri:arrow-left-s-line" data-inline="false"></iconify-icon>
-          python爬虫
+          JWT身份认证
         </a>
       
     </div>
     <div>
+      
+        <a href="/2023/08/14/%E6%B1%A0%E5%8C%96%E6%8A%80%E6%9C%AF/" class="text-sm text-gray-400 hover:text-gray-500 flex justify-center">
+          池化技术
+          <iconify-icon width="20" icon="ri:arrow-right-s-line" data-inline="false"></iconify-icon>
+        </a>
       
     </div>
   </div>

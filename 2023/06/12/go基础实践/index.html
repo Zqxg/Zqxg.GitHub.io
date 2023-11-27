@@ -15,7 +15,7 @@
 
 
 
-<title>goto的替代 | 小锅的窝</title>
+<title>Go基础实践 | 小锅的窝</title>
 
 
 
@@ -154,7 +154,7 @@
         </h2>
       </a>
       <div id="header-title" class="opacity-0 md:ml-2 md:mt-[0.1rem] text-xs font-medium whitespace-nowrap overflow-hidden overflow-ellipsis">
-        goto的替代
+        Go基础实践
       </div>
       <div class="flex-1"></div>
       <div class="flex items-center gap-3">
@@ -230,7 +230,7 @@
   <header class="overflow-hidden pt-6 pb-6 md:pt-12">
     <div class="pt-4 md:pt-6">
       <h1 id="article-title" class="text-[2rem] font-bold leading-snug mb-4 md:mb-6 md:text-[2.6rem]">
-        goto的替代
+        Go基础实践
       </h1>
       <div>
         <section class="flex items-center gap-3 text-sm">
@@ -241,18 +241,18 @@
           <span class="text-gray-400">·</span>
           <span class="flex items-center gap-1">
             <iconify-icon width="18" icon="ic:round-access-alarm" ></iconify-icon>
-            <span>1 min</span>
+            <span>6 min</span>
           </span>
           <span class="text-gray-400">·</span>
           <span class="flex items-center gap-1">
             <iconify-icon width="18" icon="icon-park-outline:font-search" ></iconify-icon>
-            <span>266 words</span>
+            <span>1.6k words</span>
           </span>
           
             <span class="text-gray-400">·</span>
             <span class="flex items-center gap-1">
               <iconify-icon width="16" icon="icon-park-outline:box" class="mr-2"></iconify-icon>
-              <a class="article-category-link" href="/categories/%E8%AF%BE%E7%A8%8B%E7%AC%94%E8%AE%B0/">课程笔记</a>
+              <a class="article-category-link" href="/categories/golang%E7%AC%94%E8%AE%B0/">golang笔记</a>
             </span>
           
         </section>
@@ -261,20 +261,99 @@
   </header>
   <!-- content -->
   <article class="post-content prose m-auto slide-enter-content dark:prose-invert">
-    <h3 id="一、介绍"><a href="#一、介绍" class="headerlink" title="一、介绍"></a>一、介绍</h3><p>goto语句也称为无条件转移语句，当执行到goto语句后，程序将跳转到标签位置。例如下图：</p>
-<p><img src="/2022/03/26/goto%E7%9A%84%E6%9B%BF%E4%BB%A3/goto1.png"></p>
-<h3 id="二、使用"><a href="#二、使用" class="headerlink" title="二、使用"></a>二、使用</h3><p>使用 goto语句在同一函数内进行 goto跳转时, goto的起点应是函数内一段小功能的结束处，goto跳转的目的 label处应是函数内另外一段小功能的开始处。</p>
-<h3 id="三、优缺点"><a href="#三、优缺点" class="headerlink" title="三、优缺点"></a>三、优缺点</h3><ol>
-<li>优点：使用goto语句，可以更改程序执行的正常顺序，因此可以跳转到程序的任何部分。</li>
-<li>缺点：</li>
+    <p><a target="_blank" rel="noopener" href="https://geektutu.com/post/quick-golang.html">Go 语言简明教程 | 快速入门 | 极客兔兔 (geektutu.com)</a></p>
+<h2 id="学习"><a href="#学习" class="headerlink" title="学习"></a>学习</h2><ol>
+<li><p>语法基础<br>[[Go基础语法]]</p>
+</li>
+<li><p>接口：</p>
+</li>
 </ol>
 <ul>
-<li>使用goto语句，因为它会使程序逻辑非常复杂，不易阅读。</li>
-<li>使用goto使得分析和验证程序（尤其是涉及循环的程序）的正确性的任务非常困难。</li>
-<li>使用 goto语句只能将 goto跳转到同一函数内，而不能从一个函数里跳转到另外一个函数里。</li>
-<li>goto不能从一段复杂的执行状态中的位置跳转到另外一个位置</li>
+<li>Go接口是一组方法的集合</li>
+<li>不包含方法的实现<blockquote>
+<p><a target="_blank" rel="noopener" href="https://juejin.cn/post/7060471869085843487">《Go语言原来这么简单》 – 接口 - 掘金 (juejin.cn)</a></p>
+</blockquote>
+</li>
 </ul>
-<h3 id="四、替换"><a href="#四、替换" class="headerlink" title="四、替换"></a>四、替换</h3><p>do while(1) 替换 goto</p>
+<ol start="3">
+<li><p>json数据操作：</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://juejin.cn/post/7052994046209294350#heading-14">Golang 基础之json数据操作 - 掘金 (juejin.cn)</a></p>
+</blockquote>
+</li>
+<li><p>并发：</p>
+</li>
+</ol>
+<ul>
+<li>两个或两个以上的任务在一段时间内被执行。</li>
+<li>CSP并发模型：通过<code>goroutine</code>和<code>channel</code>实现<blockquote>
+<p>操作系统没学好，重新复习<br><a target="_blank" rel="noopener" href="https://juejin.cn/post/6844903790131281934">Go并发原理 - 掘金 (juejin.cn)</a></p>
+</blockquote>
+</li>
+</ul>
+<ol start="5">
+<li>http协议：</li>
+</ol>
+<ul>
+<li>HTTP是一个客户端（用户）和服务端（网站）之间请求和应答的标准。  </li>
+<li>在HTTP协议中客户端发送请求接收响应，服务端接收请求发送响应，在HTTP中数据可以被称为资源可以是HTML文档、图片、普通文本等。</li>
+<li>资源是通过URL来进行定位的，URL的组成部分包括：<strong>协议+ 主机（host）+ 路径（path）+ 查询参数（query）</strong></li>
+<li>发送HTTP请求的内容包括：请求方式（GET\POST\PUT\HEAD）、路径（path）和查询参数、HTTP版本、Request Header请求头、Request Body请求体(POST)  </li>
+<li>接收HTTP响应包含：HTTP版本、响应状态码、Request Header响应头（包含额外的信息告诉客户端如何控制缓存和cookie），响应体（从服务端返回的数据）  </li>
+<li>HTTP是无状态的，每一次请求都认为是从全新的客户端发来的请求，如果需要记录状态的话需要cookie和session来保持会话  <blockquote>
+<p><a target="_blank" rel="noopener" href="https://juejin.cn/post/6857020937737502727">go语言发送http请求 - 掘金 (juejin.cn)</a></p>
+</blockquote>
+</li>
+</ul>
+<h2 id="实践"><a href="#实践" class="headerlink" title="实践"></a>实践</h2><h3 id="1-猜谜小游戏"><a href="#1-猜谜小游戏" class="headerlink" title="1.猜谜小游戏"></a>1.猜谜小游戏</h3><h4 id="项目介绍："><a href="#项目介绍：" class="headerlink" title="项目介绍："></a>项目介绍：</h4><p>使用 Golang 来构建一个猜数字游戏。在这个游戏里面，程序首先会生成一个介于 1 到 100 之间的随机整数，然后提示玩家进行猜测。玩家每次输入一个数字，程序会告诉玩家这个猜测的值是高于还是低于那个秘密的随机数，并且让玩家再次猜测。如果猜对了，就告诉玩家胜利并且退出程序。</p>
+<h4 id="学习："><a href="#学习：" class="headerlink" title="学习："></a>学习：</h4><p>随机数、随机数种子</p>
+<h4 id="实现步骤："><a href="#实现步骤：" class="headerlink" title="实现步骤："></a>实现步骤：</h4><ol>
+<li>随机数生成：</li>
+</ol>
+<ul>
+<li>导入生成随机数需要的 math/rand 包，并以时钟作为参数初始化随机数种子</li>
+<li>变量maxNum 作为随机数生成范围</li>
+</ul>
+<blockquote>
+<p>一开始使用rand.Seed()为随机数种子，结果发现Go 1.2 0以来它被弃用了，改用rand.New(rand.NewSource(seed))，注：NewSource 默认是并发不安全<br><a target="_blank" rel="noopener" href="https://www.163.com/dy/article/HGH6ND560518R7MO.html">如何正确使用随机数？|调用|rand|代码_网易订阅 (163.com)</a></p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">// 随机数生成  </span><br><span class="line">func random(numMax int) (num int) &#123;  </span><br><span class="line">   rand.New(rand.NewSource(time.Now().UnixNano())//以当前纳秒数作为随机数种子  </span><br><span class="line">   num = rand.Intn(numMax + 1) //[0,numMax]  </span><br><span class="line">   return num  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li><p>用户输入数字：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">var guessNumber int  </span><br><span class="line">fmt.Println(&quot;输入你猜的数：&quot;)  </span><br><span class="line">fmt.Scanf(&quot;%d &quot;, &amp;guessNumber)</span><br></pre></td></tr></table></figure></li>
+<li><p>判断是否正确 ：<br>将用户输入的数字与本次程序生成的随机数比较，不相等返回大于或小于。用户重新输入数字猜测，直到用户输入正确。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">// 判断是否猜对  </span><br><span class="line">//参数secNumber本轮随机数，gusNumber用户猜测数</span><br><span class="line">//返回s文本，flag猜中为true</span><br><span class="line">func judgment(secNumber, gusNumber int) (s string, flag bool) &#123;  </span><br><span class="line">   if gusNumber &lt; secNumber &#123;  </span><br><span class="line">      s = &quot;你猜的数比实际的小,再猜猜看&quot;  </span><br><span class="line">      flag = false  </span><br><span class="line">   &#125; else if gusNumber &gt; secNumber &#123;  </span><br><span class="line">      s = &quot;你猜的数比实际的大,再猜猜看&quot;  </span><br><span class="line">      flag = false  </span><br><span class="line">   &#125; else &#123;  </span><br><span class="line">      s = &quot;你猜对了，真是个小聪明！&quot;  </span><br><span class="line">      flag = true  </span><br><span class="line">   &#125;  </span><br><span class="line">   return s, flag  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>主程序</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">func main() &#123;  </span><br><span class="line">   //1.生成随机数  </span><br><span class="line">   numMax := 100  </span><br><span class="line">   secertNumber := random(numMax)  </span><br><span class="line">  </span><br><span class="line">   for &#123;  </span><br><span class="line">      //2.用户输入数字  </span><br><span class="line">      var guessNumber int  </span><br><span class="line">      fmt.Println(&quot;输入你猜的数：&quot;)  </span><br><span class="line">      fmt.Scanf(&quot;%d &quot;, &amp;guessNumber)  </span><br><span class="line">  </span><br><span class="line">      //3.判断是否猜对  </span><br><span class="line">      s, flag := judgment(secertNumber, guessNumber)  </span><br><span class="line">      fmt.Println(s)  </span><br><span class="line">      if flag == true &#123; //猜对跳出循环  </span><br><span class="line">         break  </span><br><span class="line">      &#125; else &#123; //猜错接着猜  </span><br><span class="line">         continue  </span><br><span class="line">      &#125;  </span><br><span class="line">   &#125;  </span><br><span class="line">  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="2-在线词典"><a href="#2-在线词典" class="headerlink" title="2.在线词典"></a>2.在线词典</h3><h4 id="项目介绍：-1"><a href="#项目介绍：-1" class="headerlink" title="项目介绍："></a>项目介绍：</h4><p>用户可以在命令行里面查询一个单词。此程序通过调用第三方的 API在线查询单词的翻译并打印出来。</p>
+<h4 id="学习：-1"><a href="#学习：-1" class="headerlink" title="学习："></a>学习：</h4><p>用 go 语言来发送 HTTP 请求、解析 json</p>
+<h4 id="实现步骤：-1"><a href="#实现步骤：-1" class="headerlink" title="实现步骤："></a>实现步骤：</h4><ol>
+<li>抓包：<br>本项目使用彩云翻译API实现在线翻译，开发者工具获取api</li>
+</ol>
+<ul>
+<li>打开百度翻译网页：<a target="_blank" rel="noopener" href="https://fanyi.caiyunapp.com/#/">彩云小译 - 在线翻译 (caiyunapp.com)</a></li>
+<li>打开开发者工具，找到翻译接口请求 network-&gt;XHR-&gt;Header</li>
+<li>找到查询单词的请求，HTTP 的 post 的请求</li>
+<li>查看API 的返回结果，里面会有 dictionary、wikit 两个字段。我们需要用的结果主要在dictionary 字段里面，包括单词翻译、音标等信息。<br><img src="/2023/06/12/go%E5%9F%BA%E7%A1%80%E5%AE%9E%E8%B7%B5/%E5%BD%A9%E4%BA%91%E7%BF%BB%E8%AF%91api.png"></li>
+</ul>
+<ol start="2">
+<li>Golang 发起 Post 请求<br>使用标准库中的 net/http 包来实现 POST 请求。实现 POST 请求的步骤有以下几步：</li>
+</ol>
+<ul>
+<li>创建 http.Client<br>Golang 的标准库中有一个 http.Client 结构体，它封装了所有向 HTTP 服务器发起请求的方法。我们可以通过创建一个 http.Client 对象来发送请求。<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">//创建一个空的 http.Client 对象</span><br><span class="line">client := &amp;http.Client&#123;&#125;</span><br></pre></td></tr></table></figure></li>
+<li>创建请求主体（Request Body）<br>请求主体是 HTTP 请求里面的主要内容,针对百度翻译API创建请求主体。<br>首先请求序列化：构造出来一个结构体dictRequest发送请求<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">//发送的JSON数据的结构体类型  </span><br><span class="line">type dictRequest struct &#123;  </span><br><span class="line">   TransType string `json:&quot;trans_type&quot;` //翻译类型  </span><br><span class="line">   Source    string `json:&quot;source&quot;`     //翻译的单词  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+response反序列化：结构体dictResponse，将返回的 JSON 反序列化到结构体里面。<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">type BaiDuDictResponse struct &#123;  </span><br><span class="line">   TransResult struct &#123;  </span><br><span class="line">      （省略）</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<ul>
+<li><p>创建请求对象（Request）<br>我们需要创建一个 http.Request 对象，设置请求的目标地址、请求方式和请求主体等信息。通过将请求主体设置到 http.Request 对象的 Body 字段，可以将请求主体提交到服务器。</p>
+</li>
+<li><p>发送请求<br>发送请求可以使用 http.Client 的 Do 方法，它返回一个 http.Response 对象和一个错误对象。我们需要根据错误信息来处理请求是否发送成功。如果成功发送了请求，可以通过 http.Response 对象获取服务器返回的 HTTP 状态码和响应主体等信息。</p>
+</li>
+<li><p>处理响应<br>当服务器返回响应后，我们需要对响应进行处理。观察那个 json 可以看出需要的结果是在 dict_result.simple_means 里的，用 for range 循环来迭代输出它。</p>
+</li>
+</ul>
+<h3 id="3-SOCKS5代理服务器"><a href="#3-SOCKS5代理服务器" class="headerlink" title="3.SOCKS5代理服务器"></a>3.SOCKS5代理服务器</h3><p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1BB4y1m7Gi/?spm_id_from=333.788&vd_source=83dd43e74255c7f8534d577021ce91a6">Go手写SOCKS5代理服务器_哔哩哔哩_bilibili</a></p>
 
   </article>
   <!-- tag -->
@@ -282,11 +361,11 @@
     
       
         <span class="bg-gray-100 dark:bg-gray-700 px-2 py-1 m-1 text-sm rounded-md transition-colors hover:bg-gray-200">
-          <a href="/tags/c/">c</a>
+          <a href="/tags/golang/">golang</a>
         </span>
       
         <span class="bg-gray-100 dark:bg-gray-700 px-2 py-1 m-1 text-sm rounded-md transition-colors hover:bg-gray-200">
-          <a href="/tags/c/">c++</a>
+          <a href="/tags/%E5%9F%BA%E7%A1%80/">基础</a>
         </span>
       
     
@@ -295,13 +374,18 @@
   <div class="flex justify-between mt-12 pt-6 border-t border-gray-200">
     <div>
       
-        <a href="/2022/11/26/python%E7%88%AC%E8%99%AB/" class="text-sm text-gray-400 hover:text-gray-500 flex justify-center">
+        <a href="/2023/06/16/go%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/" class="text-sm text-gray-400 hover:text-gray-500 flex justify-center">
           <iconify-icon width="20" icon="ri:arrow-left-s-line" data-inline="false"></iconify-icon>
-          python爬虫
+          Go并发编程
         </a>
       
     </div>
     <div>
+      
+        <a href="/2023/06/10/go%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/" class="text-sm text-gray-400 hover:text-gray-500 flex justify-center">
+          Go基础语法
+          <iconify-icon width="20" icon="ri:arrow-right-s-line" data-inline="false"></iconify-icon>
+        </a>
       
     </div>
   </div>
