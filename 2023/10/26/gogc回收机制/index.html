@@ -329,9 +329,9 @@
 <p>但是无论怎么优化，Go V1.3都面临这个一个重要问题，就是<strong>mark-and-sweep 算法会暂停整个程序</strong> 。</p>
 <p>Go是如何面对并这个问题的呢？接下来G V1.5版本 就用<strong>三色并发标记法</strong>来优化这个问题.</p>
 <p>后面的内容为手写笔记</p>
-<h2 id="三色标记法"><a href="#三色标记法" class="headerlink" title="三色标记法"></a>三色标记法</h2><p><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc6.png"><br><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc7.png"></p>
-<h2 id="插入写屏障"><a href="#插入写屏障" class="headerlink" title="插入写屏障"></a>插入写屏障</h2><p><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc8.png"></p>
-<h2 id="删除写屏障-amp-混合写屏障"><a href="#删除写屏障-amp-混合写屏障" class="headerlink" title="删除写屏障&amp;混合写屏障"></a>删除写屏障&amp;混合写屏障</h2><p><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc9.png"><br><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc10.png"><br><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc11.png"></p>
+<h2 id="三色标记法"><a href="#三色标记法" class="headerlink" title="三色标记法"></a>三色标记法</h2><p><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc6.jpg"><br><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc7.jpg"></p>
+<h2 id="插入写屏障"><a href="#插入写屏障" class="headerlink" title="插入写屏障"></a>插入写屏障</h2><p><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc8.jpg"></p>
+<h2 id="删除写屏障-amp-混合写屏障"><a href="#删除写屏障-amp-混合写屏障" class="headerlink" title="删除写屏障&amp;混合写屏障"></a>删除写屏障&amp;混合写屏障</h2><p><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc9.jpg"><br><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc10.jpg"><br><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc11.jpg"></p>
 
   </article>
   <!-- tag -->
