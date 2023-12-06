@@ -15,7 +15,7 @@
 
 
 
-<title>GoGC的回收机制和混合写屏障 | 小锅的窝</title>
+<title>长度最小的子数组 | 小锅的窝</title>
 
 
 
@@ -154,7 +154,7 @@
         </h2>
       </a>
       <div id="header-title" class="opacity-0 md:ml-2 md:mt-[0.1rem] text-xs font-medium whitespace-nowrap overflow-hidden overflow-ellipsis">
-        GoGC的回收机制和混合写屏障
+        长度最小的子数组
       </div>
       <div class="flex-1"></div>
       <div class="flex items-center gap-3">
@@ -230,13 +230,13 @@
   <header class="overflow-hidden pt-6 pb-6 md:pt-12">
     <div class="pt-4 md:pt-6">
       <h1 id="article-title" class="text-[2rem] font-bold leading-snug mb-4 md:mb-6 md:text-[2.6rem]">
-        GoGC的回收机制和混合写屏障
+        长度最小的子数组
       </h1>
       <div>
         <section class="flex items-center gap-3 text-sm">
           <span class="flex items-center gap-1">
             <iconify-icon width="18" icon="carbon-calendar" ></iconify-icon>
-            <time>2023-11-27</time>
+            <time>2023-12-06</time>
           </span>
           <span class="text-gray-400">·</span>
           <span class="flex items-center gap-1">
@@ -246,13 +246,13 @@
           <span class="text-gray-400">·</span>
           <span class="flex items-center gap-1">
             <iconify-icon width="18" icon="icon-park-outline:font-search" ></iconify-icon>
-            <span>1.4k words</span>
+            <span>1.1k words</span>
           </span>
           
             <span class="text-gray-400">·</span>
             <span class="flex items-center gap-1">
               <iconify-icon width="16" icon="icon-park-outline:box" class="mr-2"></iconify-icon>
-              <a class="article-category-link" href="/categories/golang%E7%AC%94%E8%AE%B0/">golang笔记</a>
+              <a class="article-category-link" href="/categories/%E7%AE%97%E6%B3%95/">算法</a>
             </span>
           
         </section>
@@ -261,89 +261,63 @@
   </header>
   <!-- content -->
   <article class="post-content prose m-auto slide-enter-content dark:prose-invert">
-    <h2 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h2><ol>
-<li>GC是什么？为什么要有GC？</li>
-<li>基础概念</li>
-<li>golang的GC</li>
-<li>如何标记</li>
-<li>GoV1.3 标记清除法</li>
-<li>三色标记法</li>
-<li>插入写屏障</li>
-<li>删除写屏障</li>
-<li>混合写屏障</li>
+    <h3 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h3><ul>
+<li>给定一个含有 n 个正整数的数组和一个正整数 s </li>
+<li>找出该数组中满足其<code>和 ≥ s</code> 的<code>长度最小</code>的 <code>连续</code> 子数组，并返回其长度。</li>
+<li>如果不存在符合条件的子数组，返回 0。</li>
+</ul>
+<h3 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h3><ol>
+<li>示例：</li>
 </ol>
-<h2 id="GC是什么？为什么要有GC？"><a href="#GC是什么？为什么要有GC？" class="headerlink" title="GC是什么？为什么要有GC？"></a>GC是什么？为什么要有GC？</h2><p><em>GC</em> 是 garbage collection 的缩写,意思是垃圾回收。</p>
 <ul>
-<li>GC是编程语言中提供的自动的内存管理机制，自动释放不需要的内存对象，让出存储器资源。</li>
-<li>GC过程中无需程序员手动执行。GC机制在现代<strong>很多编程语言</strong>都支持(Java/python/golang)，GC能力的性能与优劣也是不同语言之间对比度指标之一。</li>
+<li>输入：s = 7, nums = [2,3,1,2,4,3]</li>
+<li>输出：2</li>
+<li>解释：子数组 [4,3] 是该条件下的长度最小的子数组。</li>
 </ul>
-<p>前面说现在很多语言都有GC机制，但是在我们大一学的c++却是没有的一个标准库，所以在当时我们要自己创建内存空间和销毁，可以使我们更好了解底层原理。</p>
-<p>但是全部都要我们程序员自己造轮子，这也太麻烦了。且内存处理是开发人员容易出现问题的地方，所以现在很多语言都提供了自己的垃圾回收装置</p>
-<h2 id="基础概念"><a href="#基础概念" class="headerlink" title="基础概念"></a>基础概念</h2><p> <strong>一个标准进程的内存模型</strong></p>
+<p>提示：</p>
 <ul>
-<li>code area（方法区）</li>
-<li>static area 静态变量</li>
-<li>heap (堆)</li>
-<li>stack (栈)<br><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc1.png"><br>golang程序，是一个进程</li>
+<li>1 &lt;= target &lt;= 10^9</li>
+<li>1 &lt;= nums.length &lt;= 10^5</li>
+<li>1 &lt;= nums[i] &lt;= 10^5</li>
 </ul>
-<ul>
-<li>一个进程对应着多个OS线程，又根据[[MPG模型]]，对应着很多个协程；</li>
-<li>对所有的goroutinue来说，heap可以看作是共享的区域</li>
-<li>但是每个goroutinue，都有只属于自己的stack</li>
-</ul>
-<p><strong>一般程序的内存管理</strong><br>stack会随着线程执行code area的stack frame，自动pop、push、remove；<br>stack里的变量、调用完毕，就随着出栈，自动销毁；<br>但是heap不会，heap内的对象，通常是用stack内或者其它heap对象内的指针变量，对heap内的对象进行操作；<br>这个也叫做对象引用；<br>垃圾回收，garbage collect，回收的就是heap的空间</p>
-<h2 id="如何标记"><a href="#如何标记" class="headerlink" title="如何标记"></a>如何标记</h2><p>在 GC 领域里，判断对象存活的主流思路是两个，「引用计数」和「可达性分析」。</p>
-<ol>
-<li><p> <strong>引用计数</strong><br>顾名思义，引用计数的思路就是给每个对象进行计数，每被其它对象引用一次，计数就 +1，引用失效后，计数就 -1。当计数器的数值为 0，就意味着它没有被使用，可以回收。</p>
-</li>
-<li><p><strong>可达性分析</strong><br>可达性分析的思路就是通过引用链路判断对象是否可被触达，如果能触达说明该对象当前正在被使用，不可回收;反之，没有触达到的对象则认为是无使用的，可以回收。</p>
-</li>
+<h3 id="滑动窗口"><a href="#滑动窗口" class="headerlink" title="滑动窗口"></a>滑动窗口</h3><ol>
+<li>滑动窗口：<strong>不断的调节子序列的起始位置和终止位置，从而得出我们要想的结果</strong></li>
 </ol>
-<p>这个引用链路的结构类似于有向有环图，但是根节点不止一个，是一个集合，称之为 GCRoots。</p>
-<p>目前主流的 GC 机制大多用的是「可达性分析」这条路线，我们Golang 的GC机制也是如此。</p>
-<p>为什么引用计数不好用呢?<br>因为它有一个特别严重的问题：<strong>无法处理循环引用。</strong></p>
-<h2 id="清除-mark-and-sweep-算法"><a href="#清除-mark-and-sweep-算法" class="headerlink" title="清除(mark and sweep)算法"></a>清除(mark and sweep)算法</h2><p>主要的步骤：</p>
+<p><em>滑动窗口也可以理解为双指针法的一种，本质上还是使用两个类指针来表示起始位置</em></p>
+<ol start="2">
+<li>滑动窗口常用来解决字符串的匹配问题。  </li>
+</ol>
 <ul>
-<li>标记(Mark phase)</li>
-<li>清除(Sweep phase)</li>
+<li>匹配问题套路：不满足题意，右移窗口，更新数据；满足题意，左移窗口，更新数据。  </li>
 </ul>
-<h3 id="标记清除算法的具体步骤："><a href="#标记清除算法的具体步骤：" class="headerlink" title="标记清除算法的具体步骤："></a>标记清除算法的具体步骤：</h3><p><strong>第一步</strong>，暂停程序业务逻辑, 遍历gcRoot，分类出可达和不可达的对象，然后做上标记。<br><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc2.png"></p>
-<ul>
-<li>可达对象：从程序根节点出发，可以到达的对象 如1-2-3，4-7</li>
-<li>不可达的对象：反之 5 6</li>
-</ul>
-<p><strong>第二步</strong>, 开始标记，程序找出它所有可达的对象，并做上标记<br><strong>第三步</strong>,  标记完了之后，然后开始清除未标记的对象. 结果如下。<br><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc3.png"><br>操作非常简单，但是有一点需要额外注意：mark and sweep算法在执行的时候，需要程序暂停！<br>即 <code>STW(stop the world)</code>，STW的过程中，CPU不执行用户代码，全部用于垃圾回收，这个过程的影响很大，所以STW也是一些回收机制最大的难题和希望优化的点。所以在执行第三步的这段时间，程序会暂定停止任何工作，卡在那等待回收执行完毕。</p>
-<p><strong>第四步</strong>, 停止暂停，让程序继续跑。然后循环重复这个过程，直到process程序生命周期结束。</p>
-<p>以上便是标记-清除（mark and sweep）回收的算法。</p>
-<h3 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h3><p>标记清除算法明了，过程鲜明干脆，但是通过上面的步骤演示，我们也能发现它存在严重的问题：</p>
-<ul>
-<li>STW，stop the world；让程序暂停，程序出现卡顿 **(重要问题)**；</li>
-<li>标记需要扫描整个heap；</li>
-<li>清除数据会产生heap碎片。</li>
-</ul>
-<p>因为[[GC回收机制-01]]中提到了heap可以看作是所有的goroutinue共享的区域，因此我们需要扫描整个heap（heap碎片这个概念其实可以类比我们学习的操作系统中的内存碎片）</p>
-<p>Go V1.3版本之前：</p>
-<p><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc4.png"></p>
-<p>Go V1.3 做了简单的优化,将STW的步骤提前, 减少STW暂停的时间范围.</p>
-<p><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc5.png"></p>
-<p>但是无论怎么优化，Go V1.3都面临这个一个重要问题，就是<strong>mark-and-sweep 算法会暂停整个程序</strong> 。</p>
-<p>Go是如何面对并这个问题的呢？接下来G V1.5版本 就用<strong>三色并发标记法</strong>来优化这个问题.</p>
-<p>后面的内容为手写笔记</p>
-<h2 id="三色标记法"><a href="#三色标记法" class="headerlink" title="三色标记法"></a>三色标记法</h2><p><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc6.jpg"><br><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc7.jpg"></p>
-<h2 id="插入写屏障"><a href="#插入写屏障" class="headerlink" title="插入写屏障"></a>插入写屏障</h2><p><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc8.jpg"></p>
-<h2 id="删除写屏障-amp-混合写屏障"><a href="#删除写屏障-amp-混合写屏障" class="headerlink" title="删除写屏障&amp;混合写屏障"></a>删除写屏障&amp;混合写屏障</h2><p><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc9.jpg"><br><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc10.jpg"><br><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc11.jpg"></p>
+<ol start="3">
+<li>实现滑动窗口，主要确定如下四点：<br>（1）初始化窗口:<br>初始化左右边界 left = right = 0，把索引闭区间 [left, right] 称为一个「窗口」。<br>（2）寻找可行解：<br>我们先不断地增加 right 指针扩大窗口 [left, right]，直到窗口中的满足可行解。<br>（3）优化可行解：<br>此时，我们停止增加 right，转而不断增加 left 指针缩小窗口 [left, right]，直到窗口中的可行解不再符合要求。同时，每次增加 left，我们都要更新一轮结果。<br>（4）滑动窗口，直至一次遍历结束：<br>重复第 2 和第 3 步，直到 right 到达到的尽头。</li>
+</ol>
+<p><strong>基本模板</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">public void slideWindowTemplate(String nums)&#123;</span><br><span class="line">    int l = 0, r = 0;        //[初始化窗口]</span><br><span class="line">    //codes...               [其他初始化信息,定义一些维护数据的数据结构]</span><br><span class="line">    while(r &lt; nums.length)&#123; //右边框移动</span><br><span class="line">        r++;                 //[增大窗口]</span><br><span class="line">        //codes.....         [更新窗口中的数据] </span><br><span class="line">        while(l &lt; r &amp;&amp; check(xxx) == false)&#123;   //[窗口不满足某种性质]</span><br><span class="line">              l++;             //[缩小窗口]</span><br><span class="line">            //codes...       [维护窗口中的数据]</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h3 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">// 算法：长度最小的子数组  </span><br><span class="line">// 输入：含有n个正整数的数组和一个正整数s  </span><br><span class="line">// 输出：找出该数组中满足其和 ≥ s 的长度最小的 连续 子数组，并返回其长度。没有返回0  </span><br><span class="line">func minSubArrayLen(target int, nums []int) int &#123;  </span><br><span class="line">   // 返回结果数组长度 记录数组和 子数组长度  </span><br><span class="line">   res, sum := len(nums)+1, 0  </span><br><span class="line">   // 滑动窗口 双指针  </span><br><span class="line">   left, right := 0, 0  </span><br><span class="line">   // 右边框移动  </span><br><span class="line">   for ; right &lt; len(nums); right++ &#123;  </span><br><span class="line">      // 更新窗口中的数据  </span><br><span class="line">      sum += nums[right]  </span><br><span class="line">      // 窗口内的和大于等于target 移动左边框  </span><br><span class="line">      for ; sum &gt;= target; left++ &#123;  </span><br><span class="line">         // 更新子数组长度  </span><br><span class="line">         subLength := right - left + 1  </span><br><span class="line">         if subLength &lt; res &#123;  </span><br><span class="line">            res = subLength  </span><br><span class="line">         &#125;  </span><br><span class="line">         // 移除窗口中的数据  </span><br><span class="line">         sum -= nums[left]  </span><br><span class="line">      &#125;  </span><br><span class="line">   &#125;  </span><br><span class="line">   if res &gt; len(nums) &#123;  </span><br><span class="line">      return 0  </span><br><span class="line">   &#125; else &#123;  </span><br><span class="line">      return res  </span><br><span class="line">   &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
+<h3 id="相关题目"><a href="#相关题目" class="headerlink" title="相关题目"></a>相关题目</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/fruit-into-baskets/">904.水果成篮</a></li>
+<li><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/minimum-window-substring/">76. 最小覆盖子串</a></li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">// 算法：最长连续两个元素子数组  </span><br><span class="line">// 输入：含有n个正整数的数组  </span><br><span class="line">// 输出：含有最大连续两个元素的子数组长度  </span><br><span class="line">func totalFruit(fruits []int) (ans int) &#123;  </span><br><span class="line">   cnt := map[int]int&#123;&#125;  </span><br><span class="line">   left := 0  </span><br><span class="line">   for right, x := range fruits &#123;  </span><br><span class="line">      cnt[x]++  </span><br><span class="line">      // 第三个元素 移动窗口  </span><br><span class="line">      for len(cnt) &gt; 2 &#123;  </span><br><span class="line">         y := fruits[left]  </span><br><span class="line">         cnt[y]--  </span><br><span class="line">         if cnt[y] == 0 &#123;  </span><br><span class="line">            delete(cnt, y)  </span><br><span class="line">         &#125;  </span><br><span class="line">         left++  </span><br><span class="line">      &#125;  </span><br><span class="line">      ans = max(ans, right-left+1)  </span><br><span class="line">   &#125;  </span><br><span class="line">   return  </span><br><span class="line">&#125;  </span><br><span class="line">  </span><br><span class="line">func max(a, b int) int &#123;  </span><br><span class="line">   if b &gt; a &#123;  </span><br><span class="line">      return b  </span><br><span class="line">   &#125;  </span><br><span class="line">   return a  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>在前面的基础上引入了一个字典，动态的判断是否出现第三个元素</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">// 算法：最小覆盖子串  </span><br><span class="line">// 输入：一个字符串 s 、一个字符串 t</span><br><span class="line">// 输出：返回 s 中涵盖 t 所有字符的最小子串 。不存在返回 &quot;&quot;func minWindow(s string, t string) string &#123;  </span><br><span class="line">   var res string  </span><br><span class="line">   // 初始化字典  </span><br><span class="line">   cnt := map[byte]int&#123;&#125;  </span><br><span class="line">   for _, value := range t &#123;  </span><br><span class="line">      cnt[byte(value)]++  </span><br><span class="line">   &#125;  </span><br><span class="line">   // 记录长度  </span><br><span class="line">   min := len(s) + 1  </span><br><span class="line">   left, right := 0, 0  </span><br><span class="line">   for ; right &lt; len(s); right++ &#123;  </span><br><span class="line">      // 发现有t数组元素就-1  </span><br><span class="line">      cnt[s[right]]--  </span><br><span class="line">      // 窗口改变条件 cnt内的数值都&lt;=0  </span><br><span class="line">      for check(cnt) &#123;  </span><br><span class="line">         if right-left+1 &lt; min &#123;  </span><br><span class="line">            min = right - left + 1  </span><br><span class="line">            // 记录最小的字符串  </span><br><span class="line">            res = s[left : right+1]  </span><br><span class="line">         &#125;  </span><br><span class="line">         // 左指针移动 碰到的元素+1  </span><br><span class="line">         cnt[s[left]]++  </span><br><span class="line">         left++  </span><br><span class="line">      &#125;  </span><br><span class="line">   &#125;  </span><br><span class="line">   return res  </span><br><span class="line">&#125;  </span><br><span class="line">  </span><br><span class="line">func check(m map[byte]int) bool &#123;  </span><br><span class="line">   for _, x := range m &#123;  </span><br><span class="line">      // 如果有0的就返回 false      </span><br><span class="line">      if x &gt; 0 &#123;  </span><br><span class="line">         return false  </span><br><span class="line">      &#125;  </span><br><span class="line">   &#125;  </span><br><span class="line">   return true  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
   </article>
   <!-- tag -->
   <div class="mt-12 pt-6 border-t border-gray-200">
     
       
         <span class="bg-gray-100 dark:bg-gray-700 px-2 py-1 m-1 text-sm rounded-md transition-colors hover:bg-gray-200">
-          <a href="/tags/golang/">golang</a>
+          <a href="/tags/%E6%95%B0%E7%BB%84/">数组</a>
         </span>
       
         <span class="bg-gray-100 dark:bg-gray-700 px-2 py-1 m-1 text-sm rounded-md transition-colors hover:bg-gray-200">
-          <a href="/tags/gc/">gc</a>
+          <a href="/tags/%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3/">滑动窗口</a>
         </span>
       
     
@@ -352,16 +326,16 @@
   <div class="flex justify-between mt-12 pt-6 border-t border-gray-200">
     <div>
       
-        <a href="/2023/12/06/%E7%A7%BB%E9%99%A4%E5%85%83%E7%B4%A0/" class="text-sm text-gray-400 hover:text-gray-500 flex justify-center">
+        <a href="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/" class="text-sm text-gray-400 hover:text-gray-500 flex justify-center">
           <iconify-icon width="20" icon="ri:arrow-left-s-line" data-inline="false"></iconify-icon>
-          
+          GoGC的回收机制和混合写屏障
         </a>
       
     </div>
     <div>
       
-        <a href="/2023/10/24/%E9%95%BF%E5%BA%A6%E6%9C%80%E5%B0%8F%E7%9A%84%E5%AD%90%E6%95%B0%E7%BB%84/" class="text-sm text-gray-400 hover:text-gray-500 flex justify-center">
-          长度最小的子数组
+        <a href="/2023/10/21/%E6%95%B0%E7%BB%84%E7%90%86%E8%AE%BA%E7%9F%A5%E8%AF%86/" class="text-sm text-gray-400 hover:text-gray-500 flex justify-center">
+          移除元素
           <iconify-icon width="20" icon="ri:arrow-right-s-line" data-inline="false"></iconify-icon>
         </a>
       
