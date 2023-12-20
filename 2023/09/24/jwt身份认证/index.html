@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"zqxg.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="前言因为最近在写个人博客的项目，在做项目时，涉及用户注册、登录、退出等操作，要对登陆用户的合法性进行判断，这就需要用到身份验证了。 认证、授权、鉴权是什么？认证认证(Identification) 是指根据声明者所特有的识别信息，确认声明者的身份白话文的意思就是：你需要用身份证证明你自己是你自己。 比如我们常见的认证技术：  身份证 用户名和密码 用户手机：手机短信、手机二维码扫描、手势密码 用户">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JWT身份认证">
+<meta property="og:url" content="http://zqxg.github.io/2023/09/24/jwt%E8%BA%AB%E4%BB%BD%E8%AE%A4%E8%AF%81/index.html">
+<meta property="og:site_name" content="小锅的窝">
+<meta property="og:description" content="前言因为最近在写个人博客的项目，在做项目时，涉及用户注册、登录、退出等操作，要对登陆用户的合法性进行判断，这就需要用到身份验证了。 认证、授权、鉴权是什么？认证认证(Identification) 是指根据声明者所特有的识别信息，确认声明者的身份白话文的意思就是：你需要用身份证证明你自己是你自己。 比如我们常见的认证技术：  身份证 用户名和密码 用户手机：手机短信、手机二维码扫描、手势密码 用户">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://zqxg.github.io/2023/09/24/jwt%E8%BA%AB%E4%BB%BD%E8%AE%A4%E8%AF%81/jwt1.png">
+<meta property="og:image" content="http://zqxg.github.io/2023/09/24/jwt%E8%BA%AB%E4%BB%BD%E8%AE%A4%E8%AF%81/jwt2.png">
+<meta property="og:image" content="http://zqxg.github.io/2023/09/24/jwt%E8%BA%AB%E4%BB%BD%E8%AE%A4%E8%AF%81/jwt3.png">
+<meta property="og:image" content="http://zqxg.github.io/2023/09/24/jwt%E8%BA%AB%E4%BB%BD%E8%AE%A4%E8%AF%81/jwt4.png">
+<meta property="og:image" content="http://zqxg.github.io/2023/09/24/jwt%E8%BA%AB%E4%BB%BD%E8%AE%A4%E8%AF%81/jwt5.png">
+<meta property="og:image" content="http://zqxg.github.io/2023/09/24/jwt%E8%BA%AB%E4%BB%BD%E8%AE%A4%E8%AF%81/jwt6.png">
+<meta property="og:image" content="http://zqxg.github.io/2023/09/24/jwt%E8%BA%AB%E4%BB%BD%E8%AE%A4%E8%AF%81/jwt7.png">
+<meta property="og:image" content="http://zqxg.github.io/2023/09/24/jwt%E8%BA%AB%E4%BB%BD%E8%AE%A4%E8%AF%81/jwt8.png">
+<meta property="article:published_time" content="2023-09-23T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-11-27T14:41:28.662Z">
+<meta property="article:author" content="蒸汽小锅">
+<meta property="article:tag" content="jwt">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://zqxg.github.io/2023/09/24/jwt%E8%BA%AB%E4%BB%BD%E8%AE%A4%E8%AF%81/jwt1.png">
+
+<link rel="canonical" href="http://zqxg.github.io/2023/09/24/jwt%E8%BA%AB%E4%BB%BD%E8%AE%A4%E8%AF%81/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>JWT身份认证 | 小锅的窝</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">小锅的窝</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://zqxg.github.io/2023/09/24/jwt%E8%BA%AB%E4%BB%BD%E8%AE%A4%E8%AF%81/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/116969040?s=400&u=4b1ffd148b531b77bdc04de4c3a790535c920689&v=4">
+      <meta itemprop="name" content="蒸汽小锅">
+      <meta itemprop="description" content="写点小东西">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="小锅的窝">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          JWT身份认证
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-09-24 00:00:00" itemprop="dateCreated datePublished" datetime="2023-09-24T00:00:00+08:00">2023-09-24</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-11-27 22:41:28" itemprop="dateModified" datetime="2023-11-27T22:41:28+08:00">2023-11-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%90%8E%E7%AB%AF/" itemprop="url" rel="index"><span itemprop="name">后端</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>因为最近在写个人博客的项目，在做项目时，涉及用户注册、登录、退出等操作，要对登陆用户的合法性进行判断，这就需要用到身份验证了。</p>
+<h2 id="认证、授权、鉴权是什么？"><a href="#认证、授权、鉴权是什么？" class="headerlink" title="认证、授权、鉴权是什么？"></a>认证、授权、鉴权是什么？</h2><h3 id="认证"><a href="#认证" class="headerlink" title="认证"></a>认证</h3><p><code>认证(Identification)</code> 是指根据声明者所特有的识别信息，确认声明者的身份<br>白话文的意思就是：<code>你需要用身份证证明你自己是你自己</code>。</p>
+<p>比如我们常见的认证技术：</p>
+<ul>
+<li>身份证</li>
+<li>用户名和密码</li>
+<li>用户手机：手机短信、手机二维码扫描、手势密码</li>
+<li>用户的电子邮箱</li>
+</ul>
+<h3 id="授权"><a href="#授权" class="headerlink" title="授权"></a>授权</h3><p><code>授权(Authorization)</code>： 在信息安全领域是指<code>资源所有者</code>委派<code>执行者</code>，赋予<code>执行者</code>指定范围的资源操作权限，以便对资源的相关操作。</p>
+<p><strong>在现实生活领域例如：</strong> 银行卡（由银行派发）、门禁卡（由物业管理处派发）、钥匙（由房东派发），这些都是现实生活中授权的实现方式。</p>
+<p><strong>在互联网领域例如：</strong> web 服务器的 session 机制、web 浏览器的 cookie 机制、颁发授权令牌（token）等都是一个授权的机制。</p>
+<h3 id="鉴权"><a href="#鉴权" class="headerlink" title="鉴权"></a>鉴权</h3><p><code>鉴权(Authentication)</code> 在信息安全领域是指<strong>对于一个声明者所声明的身份权利，对其所声明的真实性进行鉴别确认的过程</strong>。</p>
+<p><strong>在现实生活领域：</strong> 门禁卡需要通过门禁卡识别器，银行卡需要通过银行卡识别器；</p>
+<p><strong>在互联网领域：</strong> 校验 session/cookie/token 的合法性和有效性</p>
+<p><strong>先授权，后鉴权</strong></p>
+<p> 也就是说，用户必须<strong>保持有效</strong>，然后才能根据其<strong>授权</strong>级别授予对资源的<strong>访问权限</strong>。一旦通过身份验证，就会为它们分配不同的角色，从而向它们授予对系统的特殊权限。</p>
+<h2 id="需求例子"><a href="#需求例子" class="headerlink" title="需求例子"></a>需求例子</h2><p>我以一个实际需求的例子带大家认识一下这个身份验证的流程</p>
+<h3 id="需求"><a href="#需求" class="headerlink" title="需求"></a>需求</h3><p>XX公司有一栋大楼。这栋大楼只有员工可以进入，普通人进不去，每个员工都有一个自己的员工号。可以通过一楼的门卫，一旦门卫将人放进去后，不同的员工还可以进入不同的屋子里。例如：总经理可以进入所以屋子里，卑微打工人小锅只能进入他自己的屋子里，而不能进入总经理办公室。</p>
+<p>我们可以总结出来<strong>实际的需求</strong>：</p>
+<ul>
+<li>判断是否为公司员工</li>
+<li>不同员工 不同权限</li>
+</ul>
+<h3 id="存储-检验"><a href="#存储-检验" class="headerlink" title="存储 检验"></a>存储 检验</h3><p>毋庸置疑的一点，对于XX公司员工的这个集合，肯定是要进入存储层，因为公司管理人员可能对员工进行一系列增删改查。总经理想看看现在有多少员工，一楼门卫也需要判断来的那个人是不是公司员工。</p>
+<p>我们想到可以使用关系型数据库创建一张表，叫做users，每个员工就是表中的一行，里面有他自己的员工id。我觉得大家应该都可以看出来这个设计有什么缺陷，员工id本身这个值相对来讲本身就是一个很容易公开出去的值，旁边的同事或者黑客很容易就窃取到。那我们怎么解决这个问题呢？很简单，既然半公开的id不行，那我们就再加一个密码。</p>
+<p>员工不仅有自己的id还有自己的密码，而且员工本人要负责保护好自己的密码，不让别知道。当员工要进入大楼的时候，他不仅要提供自己的id还要提供密码。那门卫怎么知道这个传过来的密码是不是正确的密码呢？</p>
+<blockquote>
+<p>密码存储和校验 哈希算法？</p>
+</blockquote>
+<p>门卫仅在确认了数据库中，使用这个id跟这个密码哈希能够吻合出正确的员工时才能放行。<br><img src="/2023/09/24/jwt%E8%BA%AB%E4%BB%BD%E8%AE%A4%E8%AF%81/jwt1.png"></p>
+<blockquote>
+<p>使用http发送id、密码的时候，有坏人一直偷听。并且被他听到了，那他就可以直接拿着这个密码进入大楼。那我们怎么保证不被窃取？不被监听？不被穿该呢？<br>使用RSA 非对称加密算法+数字签名构成https，使用https就OK</p>
+</blockquote>
+<h3 id="授权-1"><a href="#授权-1" class="headerlink" title="授权"></a>授权</h3><p>现在我们进入这个大楼了，每个屋子必须也要额外确定我是谁？假设我升职了，现在是一个部门经理，我只想我自己可以进入507，其他人进不来。那这个门又应该怎么设计呢？我们可以像之前的大门门卫一样，也在507门口安排一个小门门卫。当我想要进入507的时候，我同样也要输入我的员工id和密码给他。他会去数据库中检索权限信息，判断是否正确。比如说这张表，我的权限是true，那我就可以进去。而其他人想要进去这个房间，门卫就去检索一下这个表，发现他们的507权限是false，那么他们就进不去。<br><img src="/2023/09/24/jwt%E8%BA%AB%E4%BB%BD%E8%AE%A4%E8%AF%81/jwt2.png"></p>
+<h3 id="安全性"><a href="#安全性" class="headerlink" title="安全性"></a>安全性</h3><p>这个设对应的设计体系就是，用户一旦登入之后，他做的任何操作都要像他登录的那样，同样要提交他的用户id和密码。这样的设计是无状态的，好处是可以在任何时刻重启。但是也有巨大的问题，就是用户需要多次发送id、密码。</p>
+<blockquote>
+<p>这个问题可以在前端解决，直接用js或者存到cookie里，header里面都可以避免让用户重复输入</p>
+</blockquote>
+<blockquote>
+<p>那cookie安全吗？</p>
+</blockquote>
+<p>我们知道 HTTP 是明文传输协议，因此如果使用 HTTP 传输 Cookie 信息，则存在以下几个问题：</p>
+<ol>
+<li>容易被窃听：HTTP 请求及其内容都是以明文形式传输的，因此第三方可以轻松地截取和查看请求内容，并获取其中包含的 Cookie 信息。</li>
+<li>容易被篡改：由于 HTTP 没有提供任何防篡改措施，因此第三方可以修改请求内容或者插入恶意代码来窃取 Cookie 信息。<br>那我们的用户密码不是不安全吗，这时候我们可以使用我们前面提到的HTTPS来安全地传输敏感信息和 Cookie 数据。</li>
+</ol>
+<p>但是大家想一想，现在我要进入507办公室，我还得额外将我的用户密码告诉507门口的那个门卫，那么这个门卫就知道了我的用户id和密码。那如果我晚上把电脑放在507，第二天发现我的电脑丢了。那么这个电脑就可能是两个人偷的，一个是小门门卫，一个是大门门卫，我们就还得让警察来调查，问题就越来越复杂了。</p>
+<h3 id="Token"><a href="#Token" class="headerlink" title="Token"></a>Token</h3><p>一般校验用户的机密，我们只让一个组件来完成，多个组件访问就可能出现企业出内鬼的问题，也就是说看守507房间的这个门卫，我不应该随随便便把我的密码告诉他。为了避免密码被反复的传来传去，我们会使用一个比密码更加安全的东西。就是token</p>
+<blockquote>
+<p>什么是token？Token是服务端生成的一串字符串，以作客户端进行请求的一个令牌，当第一次登录后，服务器生成一个Token便将此Token返回给客户端，以后客户端只需带上这个Token前来请求数据即可，无需再次带上用户名和密码。</p>
+</blockquote>
+<p>为什么说token比密码更加安全？</p>
+<ul>
+<li>密码是永久有效的</li>
+<li>令牌有时间限制，往往只在20min-2hours有效</li>
+</ul>
+<p><img src="/2023/09/24/jwt%E8%BA%AB%E4%BB%BD%E8%AE%A4%E8%AF%81/jwt3.png"></p>
+<p>当我想进入大门的时候，我会跟大门门卫交换我的用户名跟密码，一旦交换通过，门口的门卫就会发给我一张令牌，令牌上写着：我是蒸汽小锅，我可以进入507房间。<br>于是我带着这个纸，走到507房间，把我这张带字的纸给这个507门卫，507门卫看到这个纸以后就会放我进去。</p>
+<h3 id="真实性-amp-有效期"><a href="#真实性-amp-有效期" class="headerlink" title="真实性&amp;有效期"></a>真实性&amp;有效期</h3><p>这个架构看起来没啥问题，但是又出现了一个新的问题，那就是我们怎么确定这个令牌的真实性&amp;有效期？</p>
+<blockquote>
+<p>可以存session(这里暂不涉及) / 数据库</p>
+</blockquote>
+<p>在数据库中额外加一张表，叫做tokens，里面存储所有还可以用的令牌，每个令牌除了一个数值外，还有一个可用时间。当我通过了大门门卫的校验之后，大门门卫会把这个令牌值写到数据库里，而我想要进507的时候，小门门卫又会去数据库中比对这张令牌，看看是否过期并检查它的真实性，如果是真实的就放我进去。</p>
+<p>回想我们整个需求，现在真的只有xx公司员工可以进入这个大楼，因为黑客偷不到员工密码，而且不同员工也有不同权限，每个员工在访问他自己权限的时候都要携带他的令牌，令牌有有效期，令牌本身的有效期由数据库负责。只有大楼门卫可以<br>颁发令牌，其他小门门卫只能校验令牌，确定令牌合法才会放人进去，这样总经理就可以进入任何人屋子，而我只能进入507。</p>
+<p>那现在还有什么问题呢？小门门卫虽然不能颁发令牌，但是他可以读取数据库，也就是说小门门卫可以轻松取出总经理的令牌，这还是一个非常危险的设计。<br>我们现在不得不在数据库中额外增加一张表，还需要定时的清理数据库中的过时数据，程序特别复杂，得弄好后台任务。如果碰到需要多个同时想进入自己的屋子里的请求，那几亿亿亿个小门门卫要短时间内校验几亿亿亿张令牌，要校验令牌又要查询数据库<br>数据库表示：你不要过来啊！！！！</p>
+<blockquote>
+<p>事实上，将令牌存在数据库本身就是一个不合理的设计<br>引入jwt</p>
+</blockquote>
+<h3 id="JWT"><a href="#JWT" class="headerlink" title="JWT"></a>JWT</h3><p>什么是jwt，在这里我们以一个例子为例，大家可能会更清楚。</p>
+<p>古代皇帝经常派兵出去打仗，假如打到一半的时候，皇帝突然喊停让部队。怎么喊停呢？大家应该都看过电视剧吧，就是有个使者骑个马，然后八百里加急把圣旨给那个将军，让将军回来。<br>那么现在问题又来了，这个将军怎么知道来的这个使者是皇帝派来的，不是假冒的呢？古时候的解决办法是一个叫做虎符的东西，虎符一共有两面(A,B)，这个出去打仗的时候，将军拿走A面，皇帝拿着B面，只有成对的AB两面才可以吻合的扣在一起。皇帝派出使者的时候，会让使者拿着B面，使者将B面交给将军，将军把两个扣在一起，如果可以重合，就说明这是皇帝派来的，而不是伪造的。</p>
+<p>回到我们最开始的需求例子，现在我们要进入大门，我们只需要将我们的id和密码告诉大门门卫确认了我的身份，这个门卫（皇上），他会给我一块B面虎符。我带着这个B面虎符来到507门口，把我的B面虎符给507门口的这个门卫（将军），他手中有一个A面的虎符，一扣发现扣上了，就放我进去。<br>整个过程中门口的门卫没有访问数据库，小门的门卫也没有访问数据库。这个事听起来蛮神奇的，咋回事呢？</p>
+<p><img src="/2023/09/24/jwt%E8%BA%AB%E4%BB%BD%E8%AE%A4%E8%AF%81/jwt4.png"></p>
+<p>我们从技术的角度来理解一下，首先我要发起一个http post请求，发给大门门卫，告诉他我要进入公司大楼，这一次请求中就携带了我的id跟密码。<br>大门门卫收到了我的用户名跟密码，去数据库中校验我的身份，一旦确认了我的身份之后，他要发给我的不在是一张令牌，而是一张虎符(数字签名)。<br>那么这个大门门卫要先生成这个虎符，那么这个虎符应该怎么生成呢？</p>
+<h3 id="数字签名"><a href="#数字签名" class="headerlink" title="数字签名"></a>数字签名</h3><p><img src="/2023/09/24/jwt%E8%BA%AB%E4%BB%BD%E8%AE%A4%E8%AF%81/jwt5.png"><br>分为两个部分，第一个部分是完全明文的，比如<em>I’m Zqxg Go：507 Id：0001</em>，一般开发者喜欢用Json/base64编码,只有这一段明文还是不行的，因为黑客也可以生成出这一段明文，所以我们还要加入一段数字签名</p>
+<blockquote>
+<p>什么是数字签名？<br>_数字签名_（又称公钥数字签名）是只有信息的发送者才能产生的别人无法伪造的一段数字串，这段数字串同时也是对信息的发送者发送信息真实性的一个有效证明。<br><img src="/2023/09/24/jwt%E8%BA%AB%E4%BB%BD%E8%AE%A4%E8%AF%81/jwt6.png"></p>
+</blockquote>
+<p>简单来说就是大门门卫用自己的私钥加密上面的明文得到签名后的字符串。黑客无法访问到他的私钥，从而黑客得不到数字签名。</p>
+<p>而当我拿着我虎符上楼的时候，每个小门门卫都知道大门门卫的公钥，他要确定的一点就是这张虎符一定是楼底大门门卫颁发的。怎么确定呢？他用大门门卫颁发的公钥去解密虎符后半部分的签名，</p>
+<ul>
+<li>如果解密的结果刚好等于签名明文的一部分，就证明这张虎符就是楼底大门门卫颁发的</li>
+<li>如果解密发生错误/解密结果跟明文不符合 就说明这个令牌是伪造的</li>
+</ul>
+<h3 id="需求解决"><a href="#需求解决" class="headerlink" title="需求解决"></a>需求解决</h3><p>当小门门卫确定这个令牌是大门门卫颁发的之后，他才会去看里面的内容。数据中包含着我是否能进入这个小门，从而确定放我进去 or 不放我进去</p>
+<blockquote>
+<p>黑客无法伪造这样的虎符：他无法搞到大门门卫的私钥，只能用他自己的秘钥去进行数字签名，这样的数字签名小门门卫就会发现解不开 or 解开了但是跟前面明文不符合</p>
+</blockquote>
+<p>这整个过程中，大门门卫跟小门门卫都没有访问数据库<br>大门门卫知道自己的私钥，小门门卫知道大门门卫的公钥。并且小门门卫也发不出这钟虎符，企业里面就不会出现内鬼了！！！并且小门门卫无法控制总经理的虎符，使用数字签名可以完美的解决所有需求。</p>
+<h3 id="JWT-1"><a href="#JWT-1" class="headerlink" title="JWT"></a>JWT</h3><p>JWT的token包含三部分数据：</p>
+<ol>
+<li>Header：头部，通常头部有两部分信息：</li>
+</ol>
+<ul>
+<li>声明类型type，这里是JWT（type=jwt）</li>
+<li>加密算法，自定义(rs256/base64/hs256) 我们会对头部进行base64加密（可解密），得到第一部分数据</li>
+</ul>
+<ol start="2">
+<li>Payload：载荷，就是有效数据，一般包含下面信息：</li>
+</ol>
+<ul>
+<li>用户身份信息-userid,username（注意，这里因为采用base64加密，可解密，因此不要存放敏感信息）</li>
+<li>注册声明：如token的签发时间，过期时间，签发人等 这部分也会采用base64加密，得到第二部分数据</li>
+</ul>
+<p><em>（1）标准中注册的声明（建议但不强制使用）<br>    iss: jwt签发者<br>    sub: jwt所面向的用户<br>    aud: 接收jwt的一方<br>    exp: jwt的过期时间，这个过期时间必须要大于签发时间<br>    nbf: 定义在什么时间之前，该jwt都是不可用的.<br>    iat: jwt的签发时间<br>    jti: jwt的唯一身份标识，主要用来作为一次性token,从而回避重放攻击。<br>（2）公共的声明<br>公共的声明可以添加任何的信息，一般添加用户的相关信息或其他业务需要的必要信息. 但不建议添加敏感信息，因为该部分在客户端可解密.<br>（3）私有的声明<br>私有声明是提供者和消费者所共同定义的声明，一般不建议存放敏感信息，因为base64 是对称解密的，意味着该部分信息可以归类为明文信息。</em>  </p>
+<ol>
+<li>Signature：base64加密，签名，是整个数据的认证信息。一般根据前两步的数据，再加上服务的的密钥（secret，盐）（不要泄漏，最好周期性更换），通过加密算法生成。用于验证整个数据完整和可靠性</li>
+</ol>
+<blockquote>
+<p>一个JWT实际上就是一个字符串，它由三部分组成，头部、载荷与签名。</p>
+</blockquote>
+<h3 id="代码实现上面内容"><a href="#代码实现上面内容" class="headerlink" title="代码实现上面内容"></a>代码实现上面内容</h3><p>虎符颁发</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">func Sign(payload interface&#123;&#125;) (ret string, err error) &#123;  </span><br><span class="line">   // 编码Header  </span><br><span class="line">   h := header&#123;  </span><br><span class="line">      Alg: alg, //HS256  </span><br><span class="line">      Typ: &quot;JWT&quot;,  </span><br><span class="line">   &#125;  </span><br><span class="line">   marshal, err := json.Marshal(h)  </span><br><span class="line">   if err != nil &#123;  </span><br><span class="line">      return &quot;&quot;, err  </span><br><span class="line">   &#125;  </span><br><span class="line">   bh := base64.RawURLEncoding.EncodeToString(marshal)  </span><br><span class="line">  </span><br><span class="line">   // 编码Payload  </span><br><span class="line">   marshal, err = json.Marshal(payload)  </span><br><span class="line">   if err != nil &#123;  </span><br><span class="line">      return &quot;&quot;, err  </span><br><span class="line">   &#125;  </span><br><span class="line">   bp := base64.RawURLEncoding.EncodeToString(marshal)  </span><br><span class="line">  </span><br><span class="line">   s := fmt.Sprintf(&quot;%s.%s&quot;, bh, bp)  </span><br><span class="line">  </span><br><span class="line">   // HS256 签名  </span><br><span class="line">   ret, err = hs256([]byte(Secret), []byte(s))  </span><br><span class="line">   if err != nil &#123;  </span><br><span class="line">      return &quot;&quot;, err  </span><br><span class="line">   &#125;  </span><br><span class="line">  </span><br><span class="line">   return fmt.Sprintf(&quot;%s.%s.%s&quot;, bh, bp, ret), nil  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>虎符校验</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">func Verify(token string) (err error) &#123;  </span><br><span class="line">   //分割  </span><br><span class="line">   parts := strings.Split(token, &quot;.&quot;)  </span><br><span class="line">   if len(parts) != 3 &#123;  </span><br><span class="line">      return errors.New(&quot;parts len error&quot;)  </span><br><span class="line">   &#125;  </span><br><span class="line">   //获取前两部分数据 同样HS256加密  </span><br><span class="line">   data := strings.Join(parts[0:2], &quot;.&quot;)  </span><br><span class="line">   hasher := hmac.New(sha256.New, []byte(Secret))  </span><br><span class="line">   _, err = hasher.Write([]byte(data))  </span><br><span class="line">   if err != nil &#123;  </span><br><span class="line">      return err  </span><br><span class="line">   &#125;  </span><br><span class="line">  </span><br><span class="line">   //第三部分签名  </span><br><span class="line">   sig, err := base64.RawURLEncoding.DecodeString(parts[2])  </span><br><span class="line">   if err != nil &#123;  </span><br><span class="line">      return err  </span><br><span class="line">   &#125;  </span><br><span class="line">   //比较 相同成功  </span><br><span class="line">   if hmac.Equal(sig, hasher.Sum(nil)) &#123;  </span><br><span class="line">      return nil  </span><br><span class="line">   &#125;  </span><br><span class="line">   return errors.New(&quot;verify is invalid&quot;)  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这只是一个非常非常非常简单的代码实现JWT的签发和校验，我们可以用JWT的官网来比对一下我们的校验是否正确，可以看到是正确的，并且我们的程序也是返回verify OK！！！</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sign is eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMzQ1Njc4OTAiLCJuYW1lIjoiWlFYRyIsImFkbWluIjp0cnVlfQ.omdLq6Tg_cOR6oRsSzfjh0y7vT5xGRIJILfCU1xeVz0</span><br><span class="line">verify OK</span><br></pre></td></tr></table></figure>
+<p><img src="/2023/09/24/jwt%E8%BA%AB%E4%BB%BD%E8%AE%A4%E8%AF%81/jwt7.png"></p>
+<p>虽然这个JWT已经够用了，但是我们还是不满足。因为这个代码使用的是HS256消息签名算法</p>
+<blockquote>
+<p>HS256 使用同一个「secret_key」进行签名与验证（对称加密）。一旦 secret_key 泄漏，就毫无安全性可言了。</p>
+</blockquote>
+<p>我们还可以使用RS256消息签名算法：使用 RSA 私钥进行签名，使用 RSA 公钥进行验证。公钥即使泄漏也毫无影响，只要确保私钥安全就行。</p>
+<p><em>注：对于单体应用而言，HS256 和 RS256 的安全性没有多大差别。</em></p>
+<p>我们需要自觉维持好私钥，并将公钥对全世界公开。用户想要检验自己的虎符是否过期，他可以使用js在本地校验<br><strong>Open PublicKey + JS == JWT</strong></p>
+<h3 id="JWT丢失-amp-撤回问题"><a href="#JWT丢失-amp-撤回问题" class="headerlink" title="JWT丢失&amp;撤回问题"></a>JWT丢失&amp;撤回问题</h3><p>这时候又有一个问题，如果虎符丢了，可能被黑客捡到了，那么黑客就会去找小门门卫进去507房间，因为虎符是合法的，所以小门门卫会放他进去。那我们怎么阻止黑客进入呢？</p>
+<blockquote>
+<p>解决虎符丢失问题，第一步就是别丢。不丢，虎符存哪里呢？</p>
+</blockquote>
+<ul>
+<li>存LocalStorage （不可以）可能被窃取</li>
+<li>存cookie （存jwt可以）<br>为什么可以呢，黑客无法读取你的cookie也不能改别电脑上的cookie。cookie是客户端概念，只要你的电脑没病毒，就没人能够读走你的cookie。<br>黑客注入JS可以吗？ 不可以，现在比较流行的浏览器都禁止使用JS来访问cookie了，cookie只会随着http的传递和存储。<br>所以怎么存JWT，一般网站都是存到cookie中。</li>
+</ul>
+<blockquote>
+<p>又有一个问题，如果JWT发了出去怎么撤回呢？</p>
+</blockquote>
+<p>无法撤回！！！如果你颁发了一张JWT，无论如何都无法撤回，只能等到他时间到。不然就是你调整逻辑，使用共享存储Redis，来存储被撤回的JWT<br>我们用JWT可以完美解决<strong>用户登录跟注册、退出</strong>的问题，</p>
+<p>又有一个问题了，我们的jwt作为访问资源的凭证，时间上肯定不能设置太长。但是如果我们设置的时间太短了，用户携带的频繁jwt过期，用户的体验感就会直线下降dowm。</p>
+<blockquote>
+<p>我们可以引入Refresh Token 用双Token设计来完善</p>
+</blockquote>
+<h3 id="双Token"><a href="#双Token" class="headerlink" title="双Token"></a>双Token</h3><p>双Token是什么？指的是Access Token(访问令牌) &amp;  Refresh Token (刷新令牌)</p>
+<ul>
+<li>我前面讲的 Token，都是 Access Token。</li>
+<li>Refresh Token：作用是刷新AccessToken。认证服务器会提供一个刷新接口，我们传入Refresh_token，认证服务器通过后会返回一个新的AccessToken。<br>特点：</li>
+</ul>
+<ol>
+<li>Refresh Token 的有效期会比较长，</li>
+<li>当 Access Token 由于过期而失效时，使用 Refresh Token 就可以获取到新的 Access Token 如果 Refresh Token 也失效了，用户就只能重新登录了</li>
+</ol>
+<h3 id="双Token流程："><a href="#双Token流程：" class="headerlink" title="双Token流程："></a>双Token流程：</h3><ol>
+<li>用户身份验证:当用户通过用户名和密码登录时，服务器会验证用户的身份。如果验证成功，服务器会生成访问令牌和刷新令牌，并将它们返回给客户端。</li>
+<li>使用访问令牌:客户端收到令牌后，会将访问令牌存储在本地(一般存在SessionStorage, 而刷新令牌存在LocalStorage)。然后，客户端在每次向服务器发送请求时，都会在请求头中携带访问令牌。</li>
+<li>访问令牌过期：当访问令牌过期后，服务器会拒绝来自客户端的请求,并返回一个特定的错误码，例如401(未授权)。</li>
+<li>使用刷新令牌:当客户端收到401错误码时,它会使用刷新令牌向服务器请求新的访问令牌。服务器会验证刷新令牌，如果验证成功，服务器会生成新的访问令牌，并将它返回给客户端。</li>
+<li>刷新令牌过期:如果刷新令牌也过期了，客户端就需要重新进行身份验证。</li>
+</ol>
+<p> ### JWT +Refresh Token<br><img src="/2023/09/24/jwt%E8%BA%AB%E4%BB%BD%E8%AE%A4%E8%AF%81/jwt8.png"><br>在 JWT 的实践中，引入 Refresh Token，将会话管理流程改进如下：</p>
+<ol>
+<li>客户端使用用户名密码进行认证</li>
+<li>服务端生成有效时间较短的 Access Token（例如 10 分钟），和有效时间较长的 Refresh Token（例如 7 天）</li>
+<li>客户端访问需要认证的接口时，携带 Access Token</li>
+<li>如果 Access Token 没有过期，服务端鉴权后返回给客户端需要的数据</li>
+<li>如果携带 Access Token 访问需要认证的接口时鉴权失败（例如返回 401 错误），则客户端使用 Refresh Token 向刷新接口申请新的 Access Token</li>
+<li>如果 Refresh Token 没有过期，服务端向客户端下发新的 Access Token</li>
+<li>客户端使用新的 Access Token 访问需要认证的接口</li>
+</ol>
+<p>上述的架构，提供了服务端禁用用户 Token 的方式，当用户需要登出或禁用用户时，只需要将服务端的 Refresh Token 禁用或删除，用户就会在 Access Token 过期后，由于无法获取到新的 Access Token 而再也无法访问需要认证的接口。这样的方式虽然会有一定的窗口期（取决于 Access Token 的失效时间），但是结合用户登出时客户端删除 Access Token 的操作，基本上可以适应常规情况下对用户认证鉴权的精度要求。</p>
+<h3 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h3><h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>JWT 的使用，提高了开发者开发用户认证鉴权功能的效率，降低了系统架构复杂度，避免了大量的数据库和缓存查询，降低了业务接口的响应延迟。然而 JWT 的这些优点也增加了 Token 管理上的难度，通过引入 Refresh Token，既能继续使用 JWT 所带来的优势，又能使得 Token 管理的精度符合业务的需求。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/2003411">六种Web身份验证方法比较和Flask示例代码-腾讯云开发者社区-腾讯云 (tencent.com)</a><br><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/590149659">Web身份认证的常见方式 - 知乎 (zhihu.com)</a><br><a target="_blank" rel="noopener" href="https://www.swvq.com/boutique/detail/52623">Tip7 - 来一次痛快的 HTTP :旅吧 - 学新通 (swvq.com)</a><br><a target="_blank" rel="noopener" href="https://www.cnblogs.com/chenrong/articles/5818498.html">http authorization 基本认证 - szchenrong - 博客园 (cnblogs.com)</a><br><a target="_blank" rel="noopener" href="https://juejin.cn/post/7129298214959710244#heading-3">一文教你搞定所有前端鉴权与后端鉴权方案，让你不再迷惘 - 掘金 (juejin.cn)</a><br><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/632833667">双令牌 - 知乎 (zhihu.com)</a><br><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/52300092/">基于 JWT + Refresh Token 的用户认证实践 - 知乎 (zhihu.com)</a></p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>蒸汽小锅
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://zqxg.github.io/2023/09/24/jwt%E8%BA%AB%E4%BB%BD%E8%AE%A4%E8%AF%81/" title="JWT身份认证">http://zqxg.github.io/2023/09/24/jwt身份认证/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/jwt/" rel="tag"># jwt</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/08/20/goweb%E5%AE%9E%E6%88%98/" rel="prev" title="Go Web简单实战">
+      <i class="fa fa-chevron-left"></i> Go Web简单实战
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/10/20/%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/" rel="next" title="二分查找">
+      二分查找 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%A4%E8%AF%81%E3%80%81%E6%8E%88%E6%9D%83%E3%80%81%E9%89%B4%E6%9D%83%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">2.</span> <span class="nav-text">认证、授权、鉴权是什么？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%A4%E8%AF%81"><span class="nav-number">2.1.</span> <span class="nav-text">认证</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8E%88%E6%9D%83"><span class="nav-number">2.2.</span> <span class="nav-text">授权</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%89%B4%E6%9D%83"><span class="nav-number">2.3.</span> <span class="nav-text">鉴权</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9C%80%E6%B1%82%E4%BE%8B%E5%AD%90"><span class="nav-number">3.</span> <span class="nav-text">需求例子</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9C%80%E6%B1%82"><span class="nav-number">3.1.</span> <span class="nav-text">需求</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%98%E5%82%A8-%E6%A3%80%E9%AA%8C"><span class="nav-number">3.2.</span> <span class="nav-text">存储 检验</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8E%88%E6%9D%83-1"><span class="nav-number">3.3.</span> <span class="nav-text">授权</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E5%85%A8%E6%80%A7"><span class="nav-number">3.4.</span> <span class="nav-text">安全性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Token"><span class="nav-number">3.5.</span> <span class="nav-text">Token</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9C%9F%E5%AE%9E%E6%80%A7-amp-%E6%9C%89%E6%95%88%E6%9C%9F"><span class="nav-number">3.6.</span> <span class="nav-text">真实性&amp;有效期</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#JWT"><span class="nav-number">3.7.</span> <span class="nav-text">JWT</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D"><span class="nav-number">3.8.</span> <span class="nav-text">数字签名</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9C%80%E6%B1%82%E8%A7%A3%E5%86%B3"><span class="nav-number">3.9.</span> <span class="nav-text">需求解决</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#JWT-1"><span class="nav-number">3.10.</span> <span class="nav-text">JWT</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0%E4%B8%8A%E9%9D%A2%E5%86%85%E5%AE%B9"><span class="nav-number">3.11.</span> <span class="nav-text">代码实现上面内容</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#JWT%E4%B8%A2%E5%A4%B1-amp-%E6%92%A4%E5%9B%9E%E9%97%AE%E9%A2%98"><span class="nav-number">3.12.</span> <span class="nav-text">JWT丢失&amp;撤回问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%8CToken"><span class="nav-number">3.13.</span> <span class="nav-text">双Token</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%8CToken%E6%B5%81%E7%A8%8B%EF%BC%9A"><span class="nav-number">3.14.</span> <span class="nav-text">双Token流程：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0"><span class="nav-number">3.15.</span> <span class="nav-text">代码实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">3.16.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">4.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="蒸汽小锅"
+      src="https://avatars.githubusercontent.com/u/116969040?s=400&u=4b1ffd148b531b77bdc04de4c3a790535c920689&v=4">
+  <p class="site-author-name" itemprop="name">蒸汽小锅</p>
+  <div class="site-description" itemprop="description">写点小东西</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zqxg" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zqxg" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">蒸汽小锅</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

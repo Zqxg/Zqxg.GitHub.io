@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"zqxg.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Go 语言简明教程 | 快速入门 | 极客兔兔 (geektutu.com) 学习 语法基础[[Go基础语法]]  接口：    Go接口是一组方法的集合 不包含方法的实现 《Go语言原来这么简单》 – 接口 - 掘金 (juejin.cn)     json数据操作：  Golang 基础之json数据操作 - 掘金 (juejin.cn)   并发：    两个或两个以上的任务在一段时间内被执">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Go基础实践">
+<meta property="og:url" content="http://zqxg.github.io/2023/06/12/go%E5%9F%BA%E7%A1%80%E5%AE%9E%E8%B7%B5/index.html">
+<meta property="og:site_name" content="小锅的窝">
+<meta property="og:description" content="Go 语言简明教程 | 快速入门 | 极客兔兔 (geektutu.com) 学习 语法基础[[Go基础语法]]  接口：    Go接口是一组方法的集合 不包含方法的实现 《Go语言原来这么简单》 – 接口 - 掘金 (juejin.cn)     json数据操作：  Golang 基础之json数据操作 - 掘金 (juejin.cn)   并发：    两个或两个以上的任务在一段时间内被执">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://zqxg.github.io/2023/06/12/go%E5%9F%BA%E7%A1%80%E5%AE%9E%E8%B7%B5/%E5%BD%A9%E4%BA%91%E7%BF%BB%E8%AF%91api.png">
+<meta property="article:published_time" content="2023-06-11T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-11-27T13:19:35.779Z">
+<meta property="article:author" content="蒸汽小锅">
+<meta property="article:tag" content="golang">
+<meta property="article:tag" content="基础">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://zqxg.github.io/2023/06/12/go%E5%9F%BA%E7%A1%80%E5%AE%9E%E8%B7%B5/%E5%BD%A9%E4%BA%91%E7%BF%BB%E8%AF%91api.png">
+
+<link rel="canonical" href="http://zqxg.github.io/2023/06/12/go%E5%9F%BA%E7%A1%80%E5%AE%9E%E8%B7%B5/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Go基础实践 | 小锅的窝</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">小锅的窝</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://zqxg.github.io/2023/06/12/go%E5%9F%BA%E7%A1%80%E5%AE%9E%E8%B7%B5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/116969040?s=400&u=4b1ffd148b531b77bdc04de4c3a790535c920689&v=4">
+      <meta itemprop="name" content="蒸汽小锅">
+      <meta itemprop="description" content="写点小东西">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="小锅的窝">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Go基础实践
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-06-12 00:00:00" itemprop="dateCreated datePublished" datetime="2023-06-12T00:00:00+08:00">2023-06-12</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-11-27 21:19:35" itemprop="dateModified" datetime="2023-11-27T21:19:35+08:00">2023-11-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/golang%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">golang笔记</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p><a target="_blank" rel="noopener" href="https://geektutu.com/post/quick-golang.html">Go 语言简明教程 | 快速入门 | 极客兔兔 (geektutu.com)</a></p>
+<h2 id="学习"><a href="#学习" class="headerlink" title="学习"></a>学习</h2><ol>
+<li><p>语法基础<br>[[Go基础语法]]</p>
+</li>
+<li><p>接口：</p>
+</li>
+</ol>
+<ul>
+<li>Go接口是一组方法的集合</li>
+<li>不包含方法的实现<blockquote>
+<p><a target="_blank" rel="noopener" href="https://juejin.cn/post/7060471869085843487">《Go语言原来这么简单》 – 接口 - 掘金 (juejin.cn)</a></p>
+</blockquote>
+</li>
+</ul>
+<ol start="3">
+<li><p>json数据操作：</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://juejin.cn/post/7052994046209294350#heading-14">Golang 基础之json数据操作 - 掘金 (juejin.cn)</a></p>
+</blockquote>
+</li>
+<li><p>并发：</p>
+</li>
+</ol>
+<ul>
+<li>两个或两个以上的任务在一段时间内被执行。</li>
+<li>CSP并发模型：通过<code>goroutine</code>和<code>channel</code>实现<blockquote>
+<p>操作系统没学好，重新复习<br><a target="_blank" rel="noopener" href="https://juejin.cn/post/6844903790131281934">Go并发原理 - 掘金 (juejin.cn)</a></p>
+</blockquote>
+</li>
+</ul>
+<ol start="5">
+<li>http协议：</li>
+</ol>
+<ul>
+<li>HTTP是一个客户端（用户）和服务端（网站）之间请求和应答的标准。  </li>
+<li>在HTTP协议中客户端发送请求接收响应，服务端接收请求发送响应，在HTTP中数据可以被称为资源可以是HTML文档、图片、普通文本等。</li>
+<li>资源是通过URL来进行定位的，URL的组成部分包括：<strong>协议+ 主机（host）+ 路径（path）+ 查询参数（query）</strong></li>
+<li>发送HTTP请求的内容包括：请求方式（GET\POST\PUT\HEAD）、路径（path）和查询参数、HTTP版本、Request Header请求头、Request Body请求体(POST)  </li>
+<li>接收HTTP响应包含：HTTP版本、响应状态码、Request Header响应头（包含额外的信息告诉客户端如何控制缓存和cookie），响应体（从服务端返回的数据）  </li>
+<li>HTTP是无状态的，每一次请求都认为是从全新的客户端发来的请求，如果需要记录状态的话需要cookie和session来保持会话  <blockquote>
+<p><a target="_blank" rel="noopener" href="https://juejin.cn/post/6857020937737502727">go语言发送http请求 - 掘金 (juejin.cn)</a></p>
+</blockquote>
+</li>
+</ul>
+<h2 id="实践"><a href="#实践" class="headerlink" title="实践"></a>实践</h2><h3 id="1-猜谜小游戏"><a href="#1-猜谜小游戏" class="headerlink" title="1.猜谜小游戏"></a>1.猜谜小游戏</h3><h4 id="项目介绍："><a href="#项目介绍：" class="headerlink" title="项目介绍："></a>项目介绍：</h4><p>使用 Golang 来构建一个猜数字游戏。在这个游戏里面，程序首先会生成一个介于 1 到 100 之间的随机整数，然后提示玩家进行猜测。玩家每次输入一个数字，程序会告诉玩家这个猜测的值是高于还是低于那个秘密的随机数，并且让玩家再次猜测。如果猜对了，就告诉玩家胜利并且退出程序。</p>
+<h4 id="学习："><a href="#学习：" class="headerlink" title="学习："></a>学习：</h4><p>随机数、随机数种子</p>
+<h4 id="实现步骤："><a href="#实现步骤：" class="headerlink" title="实现步骤："></a>实现步骤：</h4><ol>
+<li>随机数生成：</li>
+</ol>
+<ul>
+<li>导入生成随机数需要的 math/rand 包，并以时钟作为参数初始化随机数种子</li>
+<li>变量maxNum 作为随机数生成范围</li>
+</ul>
+<blockquote>
+<p>一开始使用rand.Seed()为随机数种子，结果发现Go 1.2 0以来它被弃用了，改用rand.New(rand.NewSource(seed))，注：NewSource 默认是并发不安全<br><a target="_blank" rel="noopener" href="https://www.163.com/dy/article/HGH6ND560518R7MO.html">如何正确使用随机数？|调用|rand|代码_网易订阅 (163.com)</a></p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">// 随机数生成  </span><br><span class="line">func random(numMax int) (num int) &#123;  </span><br><span class="line">   rand.New(rand.NewSource(time.Now().UnixNano())//以当前纳秒数作为随机数种子  </span><br><span class="line">   num = rand.Intn(numMax + 1) //[0,numMax]  </span><br><span class="line">   return num  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li><p>用户输入数字：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">var guessNumber int  </span><br><span class="line">fmt.Println(&quot;输入你猜的数：&quot;)  </span><br><span class="line">fmt.Scanf(&quot;%d &quot;, &amp;guessNumber)</span><br></pre></td></tr></table></figure></li>
+<li><p>判断是否正确 ：<br>将用户输入的数字与本次程序生成的随机数比较，不相等返回大于或小于。用户重新输入数字猜测，直到用户输入正确。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">// 判断是否猜对  </span><br><span class="line">//参数secNumber本轮随机数，gusNumber用户猜测数</span><br><span class="line">//返回s文本，flag猜中为true</span><br><span class="line">func judgment(secNumber, gusNumber int) (s string, flag bool) &#123;  </span><br><span class="line">   if gusNumber &lt; secNumber &#123;  </span><br><span class="line">      s = &quot;你猜的数比实际的小,再猜猜看&quot;  </span><br><span class="line">      flag = false  </span><br><span class="line">   &#125; else if gusNumber &gt; secNumber &#123;  </span><br><span class="line">      s = &quot;你猜的数比实际的大,再猜猜看&quot;  </span><br><span class="line">      flag = false  </span><br><span class="line">   &#125; else &#123;  </span><br><span class="line">      s = &quot;你猜对了，真是个小聪明！&quot;  </span><br><span class="line">      flag = true  </span><br><span class="line">   &#125;  </span><br><span class="line">   return s, flag  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>主程序</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">func main() &#123;  </span><br><span class="line">   //1.生成随机数  </span><br><span class="line">   numMax := 100  </span><br><span class="line">   secertNumber := random(numMax)  </span><br><span class="line">  </span><br><span class="line">   for &#123;  </span><br><span class="line">      //2.用户输入数字  </span><br><span class="line">      var guessNumber int  </span><br><span class="line">      fmt.Println(&quot;输入你猜的数：&quot;)  </span><br><span class="line">      fmt.Scanf(&quot;%d &quot;, &amp;guessNumber)  </span><br><span class="line">  </span><br><span class="line">      //3.判断是否猜对  </span><br><span class="line">      s, flag := judgment(secertNumber, guessNumber)  </span><br><span class="line">      fmt.Println(s)  </span><br><span class="line">      if flag == true &#123; //猜对跳出循环  </span><br><span class="line">         break  </span><br><span class="line">      &#125; else &#123; //猜错接着猜  </span><br><span class="line">         continue  </span><br><span class="line">      &#125;  </span><br><span class="line">   &#125;  </span><br><span class="line">  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="2-在线词典"><a href="#2-在线词典" class="headerlink" title="2.在线词典"></a>2.在线词典</h3><h4 id="项目介绍：-1"><a href="#项目介绍：-1" class="headerlink" title="项目介绍："></a>项目介绍：</h4><p>用户可以在命令行里面查询一个单词。此程序通过调用第三方的 API在线查询单词的翻译并打印出来。</p>
+<h4 id="学习：-1"><a href="#学习：-1" class="headerlink" title="学习："></a>学习：</h4><p>用 go 语言来发送 HTTP 请求、解析 json</p>
+<h4 id="实现步骤：-1"><a href="#实现步骤：-1" class="headerlink" title="实现步骤："></a>实现步骤：</h4><ol>
+<li>抓包：<br>本项目使用彩云翻译API实现在线翻译，开发者工具获取api</li>
+</ol>
+<ul>
+<li>打开百度翻译网页：<a target="_blank" rel="noopener" href="https://fanyi.caiyunapp.com/#/">彩云小译 - 在线翻译 (caiyunapp.com)</a></li>
+<li>打开开发者工具，找到翻译接口请求 network-&gt;XHR-&gt;Header</li>
+<li>找到查询单词的请求，HTTP 的 post 的请求</li>
+<li>查看API 的返回结果，里面会有 dictionary、wikit 两个字段。我们需要用的结果主要在dictionary 字段里面，包括单词翻译、音标等信息。<br><img src="/2023/06/12/go%E5%9F%BA%E7%A1%80%E5%AE%9E%E8%B7%B5/%E5%BD%A9%E4%BA%91%E7%BF%BB%E8%AF%91api.png"></li>
+</ul>
+<ol start="2">
+<li>Golang 发起 Post 请求<br>使用标准库中的 net/http 包来实现 POST 请求。实现 POST 请求的步骤有以下几步：</li>
+</ol>
+<ul>
+<li>创建 http.Client<br>Golang 的标准库中有一个 http.Client 结构体，它封装了所有向 HTTP 服务器发起请求的方法。我们可以通过创建一个 http.Client 对象来发送请求。<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">//创建一个空的 http.Client 对象</span><br><span class="line">client := &amp;http.Client&#123;&#125;</span><br></pre></td></tr></table></figure></li>
+<li>创建请求主体（Request Body）<br>请求主体是 HTTP 请求里面的主要内容,针对百度翻译API创建请求主体。<br>首先请求序列化：构造出来一个结构体dictRequest发送请求<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">//发送的JSON数据的结构体类型  </span><br><span class="line">type dictRequest struct &#123;  </span><br><span class="line">   TransType string `json:&quot;trans_type&quot;` //翻译类型  </span><br><span class="line">   Source    string `json:&quot;source&quot;`     //翻译的单词  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+response反序列化：结构体dictResponse，将返回的 JSON 反序列化到结构体里面。<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">type BaiDuDictResponse struct &#123;  </span><br><span class="line">   TransResult struct &#123;  </span><br><span class="line">      （省略）</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<ul>
+<li><p>创建请求对象（Request）<br>我们需要创建一个 http.Request 对象，设置请求的目标地址、请求方式和请求主体等信息。通过将请求主体设置到 http.Request 对象的 Body 字段，可以将请求主体提交到服务器。</p>
+</li>
+<li><p>发送请求<br>发送请求可以使用 http.Client 的 Do 方法，它返回一个 http.Response 对象和一个错误对象。我们需要根据错误信息来处理请求是否发送成功。如果成功发送了请求，可以通过 http.Response 对象获取服务器返回的 HTTP 状态码和响应主体等信息。</p>
+</li>
+<li><p>处理响应<br>当服务器返回响应后，我们需要对响应进行处理。观察那个 json 可以看出需要的结果是在 dict_result.simple_means 里的，用 for range 循环来迭代输出它。</p>
+</li>
+</ul>
+<h3 id="3-SOCKS5代理服务器"><a href="#3-SOCKS5代理服务器" class="headerlink" title="3.SOCKS5代理服务器"></a>3.SOCKS5代理服务器</h3><p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1BB4y1m7Gi/?spm_id_from=333.788&vd_source=83dd43e74255c7f8534d577021ce91a6">Go手写SOCKS5代理服务器_哔哩哔哩_bilibili</a></p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>蒸汽小锅
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://zqxg.github.io/2023/06/12/go%E5%9F%BA%E7%A1%80%E5%AE%9E%E8%B7%B5/" title="Go基础实践">http://zqxg.github.io/2023/06/12/go基础实践/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/golang/" rel="tag"># golang</a>
+              <a href="/tags/%E5%9F%BA%E7%A1%80/" rel="tag"># 基础</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/06/10/go%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/" rel="prev" title="Go基础语法">
+      <i class="fa fa-chevron-left"></i> Go基础语法
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/06/16/go%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/" rel="next" title="Go并发编程">
+      Go并发编程 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AD%A6%E4%B9%A0"><span class="nav-number">1.</span> <span class="nav-text">学习</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E8%B7%B5"><span class="nav-number">2.</span> <span class="nav-text">实践</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E7%8C%9C%E8%B0%9C%E5%B0%8F%E6%B8%B8%E6%88%8F"><span class="nav-number">2.1.</span> <span class="nav-text">1.猜谜小游戏</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%A1%B9%E7%9B%AE%E4%BB%8B%E7%BB%8D%EF%BC%9A"><span class="nav-number">2.1.1.</span> <span class="nav-text">项目介绍：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AD%A6%E4%B9%A0%EF%BC%9A"><span class="nav-number">2.1.2.</span> <span class="nav-text">学习：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0%E6%AD%A5%E9%AA%A4%EF%BC%9A"><span class="nav-number">2.1.3.</span> <span class="nav-text">实现步骤：</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E5%9C%A8%E7%BA%BF%E8%AF%8D%E5%85%B8"><span class="nav-number">2.2.</span> <span class="nav-text">2.在线词典</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%A1%B9%E7%9B%AE%E4%BB%8B%E7%BB%8D%EF%BC%9A-1"><span class="nav-number">2.2.1.</span> <span class="nav-text">项目介绍：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AD%A6%E4%B9%A0%EF%BC%9A-1"><span class="nav-number">2.2.2.</span> <span class="nav-text">学习：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0%E6%AD%A5%E9%AA%A4%EF%BC%9A-1"><span class="nav-number">2.2.3.</span> <span class="nav-text">实现步骤：</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-SOCKS5%E4%BB%A3%E7%90%86%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="nav-number">2.3.</span> <span class="nav-text">3.SOCKS5代理服务器</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="蒸汽小锅"
+      src="https://avatars.githubusercontent.com/u/116969040?s=400&u=4b1ffd148b531b77bdc04de4c3a790535c920689&v=4">
+  <p class="site-author-name" itemprop="name">蒸汽小锅</p>
+  <div class="site-description" itemprop="description">写点小东西</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zqxg" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zqxg" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">蒸汽小锅</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
