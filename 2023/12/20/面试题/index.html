@@ -1,16 +1,537 @@
-{% extends '_layout.swig' %}
-{% import '_macro/sidebar.swig' as sidebar_template with context %}
+<!DOCTYPE html>
+<html lang="ZH">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
 
-{% block title %}{{ page.title }} | {{ title }}{% endblock %}
+<link rel="stylesheet" href="/css/main.css">
 
-{% block class %}post posts-expand{% endblock %}
 
-{% block content %}
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
 
-  {{ partial('_macro/post.swig', {post: page}) }}
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"zqxg.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
 
-{% endblock %}
+  <meta name="description" content="1. golang 中 make 和 new 的区别？（基本必问）  共同点：给变量分配内存 区别： 作用变量类型不同：new给string,int和数组（值类型）分配内存，make给切片，map，channel（引用类型）分配内存； 返回类型不一样：new返回指向变量的指针，make返回变量本身； new 分配的空间被清零。make 分配空间后，会进行初始化；     for range 的时候">
+<meta property="og:type" content="article">
+<meta property="og:title" content="面试题（持续更新）">
+<meta property="og:url" content="http://zqxg.github.io/2023/12/20/%E9%9D%A2%E8%AF%95%E9%A2%98/index.html">
+<meta property="og:site_name" content="小锅的窝">
+<meta property="og:description" content="1. golang 中 make 和 new 的区别？（基本必问）  共同点：给变量分配内存 区别： 作用变量类型不同：new给string,int和数组（值类型）分配内存，make给切片，map，channel（引用类型）分配内存； 返回类型不一样：new返回指向变量的指针，make返回变量本身； new 分配的空间被清零。make 分配空间后，会进行初始化；     for range 的时候">
+<meta property="og:locale">
+<meta property="article:published_time" content="2023-12-19T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-12-20T06:53:07.624Z">
+<meta property="article:author" content="Zqxg">
+<meta property="article:tag" content="八股">
+<meta property="article:tag" content="go">
+<meta name="twitter:card" content="summary">
 
-{% block sidebar %}
-  {{ sidebar_template.render(true) }}
-{% endblock %}
+<link rel="canonical" href="http://zqxg.github.io/2023/12/20/%E9%9D%A2%E8%AF%95%E9%A2%98/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'ZH'
+  };
+</script>
+
+  <title>面试题（持续更新） | 小锅的窝</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="تشغيل شريط التصفح">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">小锅的窝</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>الأرشيفات</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="ZH">
+    <link itemprop="mainEntityOfPage" href="http://zqxg.github.io/2023/12/20/%E9%9D%A2%E8%AF%95%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Zqxg">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="小锅的窝">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          面试题（持续更新）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">نُشر في</span>
+              
+
+              <time title="أُنشأ: 2023-12-20 00:00:00 / عُدل: 14:53:07" itemprop="dateCreated datePublished" datetime="2023-12-20T00:00:00+08:00">2023-12-20</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">في</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E9%9D%A2%E8%AF%95/" itemprop="url" rel="index"><span itemprop="name">面试</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p><strong>1. golang 中 make 和 new 的区别？</strong>（基本必问）</p>
+<ul>
+<li>共同点：给变量分配内存</li>
+<li>区别：<ul>
+<li>作用变量类型不同：new给string,int和数组（值类型）分配内存，make给切片，map，channel（引用类型）分配内存；</li>
+<li>返回类型不一样：new返回指向变量的指针，make返回变量本身；</li>
+<li>new 分配的空间被清零。make 分配空间后，会进行初始化；</li>
+</ul>
+</li>
+</ul>
+<ol start="2">
+<li><p>for range 的时候它的地址会发生变化么？<br>不会，在 for a,b := range c 遍历中， a 和 b 在内存中只会存在一份，即之后每次循环时遍历到的数据都是以值覆盖的方式赋给 a 和 b，a，b 的内存地址始终不变。由于有这个特性，for 循环里面如果开协程，不要直接把 a 或者 b 的地址传给协程。解决办法：在每次循环时，创建一个临时变量。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">for key, value := range oldMap &#123;</span><br><span class="line">    newMap[key] = value</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>defer<br>作用：defer延迟函数，释放资源，收尾工作；如释放锁，关闭文件，关闭链接；捕获panic;<br>避坑指南：defer函数紧跟在资源打开后面，否则defer可能得不到执行，导致内存泄露。<br>多个 defer 调用顺序是 LIFO（后入先出），defer后的操作可以理解为压入栈中<br>所以defer的执行时机应该是return之后，且返回值返回给调用方之前。</p>
+</li>
+</ol>
+<ul>
+<li><p>先return，再defer</p>
+</li>
+<li><p>遇到panic时，遍历本协程的defer链表，并执行defer。在执行defer过程中:遇到recover则停止panic，返回recover处继续往下执行。如果没有遇到recover，遍历完本协程的defer链表后，向stderr抛出panic信息</p>
+</li>
+</ul>
+<p> <strong>defer 最大的功能是 panic 后依然有效</strong><br>所以defer可以保证你的一些资源一定会被关闭，从而避免一些异常出现的问题。</p>
+<ol start="4">
+<li> <strong>golang 中解析 tag 是怎么实现的？反射原理是什么？</strong></li>
+</ol>
+<ul>
+<li>tag可以理解为是struct的注解，可以用来定义字段的一个或多个属性。</li>
+<li>原理是反射机制。Go语言的反射机制（Reflection）是指在运行时<strong>动态</strong>地检查类型的能力，以及<strong>动态调用</strong>类型的方法、获取和修改类型的字段值等操作。</li>
+<li>在实践中，tag经常被用于序列化和反序列化（如 JSON、XML），数据验证，数据库 ORM 映射等场景。</li>
+</ul>
+<p><a target="_blank" rel="noopener" href="https://learnku.com/articles/78000">Go Tag 标签 详解 | Go 技术论坛 (learnku.com)</a></p>
+<ol start="5">
+<li>调用函数传入结构体时，应该传值还是指针？ （<strong>Golang 都是传值</strong>）<br>Go 的函数参数传递都是值传递。</li>
+</ol>
+<ul>
+<li>所谓值传递：指在调用函数时将实际参数复制一份传递到函数中，这样在函数中如果对参数进行修改，将不会影响到实际参数。</li>
+<li>引用传递，所谓引用传递是指在调用函数时将实际参数的地址传递到函数中，那么在函数中对参数所进行的修改，将影响到实际参数</li>
+</ul>
+<p>因为 Go 里面的 map，slice，chan 是引用类型。变量区分值类型和引用类型。</p>
+<ul>
+<li>所谓值类型：变量和变量的值存在同一个位置。</li>
+<li>所谓引用类型：变量和变量的值是不同的位置，变量的值存储的是对值的引用。</li>
+<li>但并不是 map，slice，chan 的所有的变量在函数内都能被修改，不同数据类型的底层存储结构和实现可能不太一样，情况也就不一样。</li>
+</ul>
+<ol start="6">
+<li><strong>讲讲 Go 的 select 底层数据结构和一些特性？</strong></li>
+</ol>
+<ul>
+<li>select 结构组成主要是由 case 语句和执行的函数组成</li>
+<li>select 实现的多路复用是：每个线程或者进程都先到注册和接受的 channel（装置）注册，然后阻塞，然后只有一个线程在运输，当注册的线程和进程准备好数据后，装置会根据注册的信息得到相应的数据。</li>
+</ul>
+<p><strong>select 的特性</strong><br>1）select 操作至少要有一个 case 语句，出现读写 nil 的 channel 该分支会忽略，在 nil 的 channel 上操作则会报错。<br>2）select 仅支持管道，而且是单协程操作。<br>3）每个 case 语句仅能处理一个管道，要么读要么写。<br>4）多个 case 语句的执行顺序是随机的。<br>5）存在 default 语句，select 将不会阻塞，但是存在 default 会影响性能。</p>
+<ol start="7">
+<li>go出现panic的场景</li>
+</ol>
+<ul>
+<li>数组/切片越界</li>
+<li>空指针调用</li>
+<li>过早关闭http相应</li>
+<li>除以0</li>
+<li>向关闭的channel发消息</li>
+<li>重复关闭channel</li>
+<li>未初始化map</li>
+</ul>
+<ol start="8">
+<li><p>go是否支持while循环，如何实现这种机制<br>不支持，使用for循环和break来替代</p>
+</li>
+<li><p><strong>数组和切片的区别 （基本必问）</strong></p>
+</li>
+</ol>
+<p><strong>相同点：</strong></p>
+<ul>
+<li>只能存储一组相同类型的数据结构</li>
+<li>都是通过下标来访问，并且有容量长度，长度通过 len 获取，容量通过 cap 获取</li>
+</ul>
+<p><strong>区别：</strong></p>
+<ul>
+<li>数组是定长，访问和复制不能超过数组定义的长度，否则就会下标越界，切片长度和容量可以自动扩容</li>
+<li>数组是值类型，切片是引用类型，每个切片都引用了一个底层数组，切片本身不能存储任何数据，都是这底层数组存储数据，所以修改切片的时候修改的是底层数组中的数据。切片一旦扩容，指向一个新的底层数组，内存地址也就随之改变</li>
+</ul>
+<h2 id="map相关"><a href="#map相关" class="headerlink" title="map相关"></a><strong>map相关</strong></h2><ol>
+<li>map 中删除一个 key，它的内存会释放么？（常问）</li>
+</ol>
+<ul>
+<li>map的底层是有一个hash表的，这个hash表本身就占用内存。</li>
+<li>如果这个key对应的value是一个值类型，那么内存不会释放。</li>
+<li>如果这个key对应的value是一个引用类型，那么会释放这个元素对内存空间的占用。</li>
+</ul>
+<ol start="2">
+<li> map 使用注意的点，是否并发安全？</li>
+</ol>
+<ul>
+<li><strong>一定要先初始化，否则panic</strong></li>
+<li>map类型是容易发生并发访问问题的。</li>
+</ul>
+<ol start="3">
+<li>怎么处理对 map 进行并发访问？有没有其他方案？ 区别是什么？</li>
+</ol>
+<ul>
+<li><strong>方式一、使用内置sync.Map，详细参考</strong> <a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1895565">Go - 使用 sync.Map 来解决 map 的并发操作问题-腾讯云开发者社区-腾讯云 (tencent.com)</a></li>
+<li><strong>方式二、使用读写锁实现并发安全map</strong><a href="https://link.zhihu.com/?target=https://mbd.baidu.com/ma/s/qO7b0VQU">https://mbd.baidu.com/ma/s/qO7b0VQUmbd.baidu.com/ma/s/qO7b0VQU</a><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1539049">https://cloud.tencent.com/developer/article/1539049</a></li>
+</ul>
+<ol start="4">
+<li><strong>nil map 未初始化，空map是长度为空</strong></li>
+</ol>
+<ul>
+<li>map声明后初始化前，此时为<code>nil map</code></li>
+<li>map声明后不能进行赋值，只有初始化后才能进行赋值操作，初始化后为<code>empty map</code></li>
+</ul>
+<ol start="5">
+<li>map 的数据结构是什么？</li>
+</ol>
+<ul>
+<li>go map的本质也是使用hash table + 链表的方式实现。</li>
+<li>map的基本数据结构用的是hmap + 桶实现</li>
+</ul>
+<ol start="6">
+<li>map的扩容机制<br><a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_45743893/article/details/122927041#:~:text=map%E7%9A%84%E5%BA%95%E5%B1%82%E7%BB%93%E6%9E%84%201%20buckets%20buckets%E6%98%AF%E4%B8%80%E4%B8%AA%E6%8C%87%E9%92%88%EF%BC%8C%E6%8C%87%E5%90%91%E4%B8%80%E4%B8%AAbmap%E6%95%B0%E7%BB%84%EF%BC%8C%E5%AD%98%E5%82%A8%E5%A4%9A%E4%B8%AA%E6%A1%B6%E3%80%82%202%20oldbuckets%20oldbuckets%E6%98%AF%E4%B8%80%E4%B8%AA%E6%8C%87%E9%92%88%EF%BC%8C%E6%8C%87%E5%90%91%E4%B8%80%E4%B8%AAbmap%E6%95%B0%E7%BB%84%EF%BC%8C%E5%AD%98%E5%82%A8%E5%A4%9A%E4%B8%AA%E6%97%A7%E6%A1%B6%EF%BC%8C%E7%94%A8%E4%BA%8E%E6%89%A9%E5%AE%B9%E3%80%82%203,overflow%E6%98%AF%E4%B8%80%E4%B8%AA%E6%8C%87%E9%92%88%EF%BC%8C%E6%8C%87%E5%90%91%E4%B8%80%E4%B8%AA%E5%85%83%E7%B4%A0%E4%B8%AA%E6%95%B0%E4%B8%BA2%E7%9A%84%E6%95%B0%E7%BB%84%EF%BC%8C%E6%95%B0%E7%BB%84%E7%9A%84%E7%B1%BB%E5%9E%8B%E6%98%AF%E4%B8%80%E4%B8%AA%E6%8C%87%E9%92%88%EF%BC%8C%E6%8C%87%E5%90%91%E4%B8%80%E4%B8%AAslice%EF%BC%8Cslice%E7%9A%84%E5%85%83%E7%B4%A0%E6%98%AF%E6%A1%B6%20%28bmap%29%E7%9A%84%E5%9C%B0%E5%9D%80%EF%BC%8C%E8%BF%99%E4%BA%9B%E6%A1%B6%E9%83%BD%E6%98%AF%E6%BA%A2%E5%87%BA%E6%A1%B6%E3%80%82%20%E4%B8%BA%E4%BB%80%E4%B9%88%E6%9C%89%E4%B8%A4%E4%B8%AA%EF%BC%9F%20%E5%9B%A0%E4%B8%BAGo%20map%E5%9C%A8%E5%93%88%E5%B8%8C%E5%86%B2%E7%AA%81%E8%BF%87%E5%A4%9A%E6%97%B6%EF%BC%8C%E4%BC%9A%E5%8F%91%E7%94%9F%E6%89%A9%E5%AE%B9%E6%93%8D%E4%BD%9C%E3%80%82%20%5B0%5D%E8%A1%A8%E7%A4%BA%E5%BD%93%E5%89%8D%E4%BD%BF%E7%94%A8%E7%9A%84%E6%BA%A2%E5%87%BA%E6%A1%B6%E9%9B%86%E5%90%88%EF%BC%8C%20%5B1%5D%E6%98%AF%E5%9C%A8%E5%8F%91%E7%94%9F%E6%89%A9%E5%AE%B9%E6%97%B6%EF%BC%8C%E4%BF%9D%E5%AD%98%E4%BA%86%E6%97%A7%E7%9A%84%E6%BA%A2%E5%87%BA%E6%A1%B6%E9%9B%86%E5%90%88%E3%80%82%20overflow%E5%AD%98%E5%9C%A8%E7%9A%84%E6%84%8F%E4%B9%89%E5%9C%A8%E4%BA%8E%E9%98%B2%E6%AD%A2%E6%BA%A2%E5%87%BA%E6%A1%B6%E8%A2%ABgc%E3%80%82">Go map的底层原理（存储、扩容）golang map扩容原理-CSDN博客</a></li>
+</ol>
+<p><strong>增量扩容：</strong><br>Go采用的是增量扩容方案，当map开始扩容后，每一次map操作都会触发一部分扩容搬迁工作（每进行一次赋值，会做至少一次搬迁工作）。由hmap中的nevacuate成员记录当前的搬迁进度。</p>
+<p><strong>扩容情况一：存储的键值对数量过多</strong></p>
+<ul>
+<li>这种情况下map会进行翻倍扩容。</li>
+<li>Go创建一个新的buckets数组，这个buckets数组的容量是旧buckets数组的两倍，并将旧数组的数据逐步迁移至新数组。</li>
+<li>旧的buckets数组不会被直接删除，而是会把原来对旧数组的引用去掉，让GC来清除内存。</li>
+</ul>
+<p><strong>扩容情况二：溢出桶数量过多</strong></p>
+<ul>
+<li>如果出现了这种情况，可能是因为哈希表里有过多的空键值对，很多桶的内部出现了空洞（装不满）。这个时候就需要通过map扩容做内存整理。目的就是为了清除bmap桶中空闲的键值对。</li>
+<li>这种情况下map扩容步骤与情况一基本相同，只不过扩容后map容量还是原来的大小。Go会创建一个与原buckets数组容量相同的buckets数组，并将旧数组的数据逐步迁移至这个新数组。再去除旧数组的引用，让GC来清除内存。</li>
+</ul>
+<p><a target="_blank" rel="noopener" href="https://www.topgoer.cn/docs/gozhuanjia/gochan4">chan - 地鼠文档 (topgoer.cn)</a></p>
+<h2 id="redis"><a href="#redis" class="headerlink" title="redis"></a>redis</h2><ol>
+<li>redis数据不丢失问题</li>
+</ol>
+<ul>
+<li>持久化：Redis提供了两种持久化方式，分别是RDB持久化和AOF持久化。RDB持久化会在指定的时间间隔内将数据集快照写入磁盘，而AOF持久化则会将写命令追加到文件末尾。通过这两种方式，即使Redis意外关闭，也可以通过加载持久化文件来恢复数据。  </li>
+<li>主从复制：Redis支持主从复制，可以将主节点的数据复制到多个从节点。在主节点发生故障时，可以选择一个从节点提升为主节点，从而保证数据的持久性和高可用性。  </li>
+<li>数据备份：定期对Redis数据进行备份，可以通过快照或者复制Redis持久化文件来进行备份。这样即使发生数据丢失的情况，也可以通过备份数据进行恢复。  </li>
+<li>高可用性方案：使用Redis的集群模式或者配合其他高可用性方案，如Sentinel或Redis Cluster，来保证Redis服务的高可用性，从而避免数据丢失。  </li>
+</ul>
+<p>通过以上方式，Redis可以有效地保证数据不丢失。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%85%AB%E8%82%A1/" rel="tag"># 八股</a>
+              <a href="/tags/go/" rel="tag"># go</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/12/06/%E7%A7%BB%E9%99%A4%E5%85%83%E7%B4%A0/" rel="prev" title="">
+      <i class="fa fa-chevron-left"></i> 
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          المحتويات
+        </li>
+        <li class="sidebar-nav-overview">
+          عام
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#map%E7%9B%B8%E5%85%B3"><span class="nav-number">1.</span> <span class="nav-text">map相关</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#redis"><span class="nav-number">2.</span> <span class="nav-text">redis</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Zqxg</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">المقالات</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">التصنيفات</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">الوسوم</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zqxg</span>
+</div>
+  <div class="powered-by">تطبيق الموقع <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

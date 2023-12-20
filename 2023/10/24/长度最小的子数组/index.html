@@ -1,16 +1,448 @@
-{% extends '_layout.swig' %}
-{% import '_macro/sidebar.swig' as sidebar_template with context %}
+<!DOCTYPE html>
+<html lang="ZH">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
 
-{% block title %}{{ page.title }} | {{ title }}{% endblock %}
+<link rel="stylesheet" href="/css/main.css">
 
-{% block class %}post posts-expand{% endblock %}
 
-{% block content %}
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
 
-  {{ partial('_macro/post.swig', {post: page}) }}
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"zqxg.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
 
-{% endblock %}
+  <meta name="description" content="题目 给定一个含有 n 个正整数的数组和一个正整数 s  找出该数组中满足其和 ≥ s 的长度最小的 连续 子数组，并返回其长度。 如果不存在符合条件的子数组，返回 0。  示例 示例：   输入：s &#x3D; 7, nums &#x3D; [2,3,1,2,4,3] 输出：2 解释：子数组 [4,3] 是该条件下的长度最小的子数组。  提示：  1 &lt;&#x3D; target &lt;&#x3D; 10^9 1 &lt;&#x3D;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="长度最小的子数组">
+<meta property="og:url" content="http://zqxg.github.io/2023/10/24/%E9%95%BF%E5%BA%A6%E6%9C%80%E5%B0%8F%E7%9A%84%E5%AD%90%E6%95%B0%E7%BB%84/index.html">
+<meta property="og:site_name" content="小锅的窝">
+<meta property="og:description" content="题目 给定一个含有 n 个正整数的数组和一个正整数 s  找出该数组中满足其和 ≥ s 的长度最小的 连续 子数组，并返回其长度。 如果不存在符合条件的子数组，返回 0。  示例 示例：   输入：s &#x3D; 7, nums &#x3D; [2,3,1,2,4,3] 输出：2 解释：子数组 [4,3] 是该条件下的长度最小的子数组。  提示：  1 &lt;&#x3D; target &lt;&#x3D; 10^9 1 &lt;&#x3D;">
+<meta property="og:locale">
+<meta property="article:published_time" content="2023-10-23T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-12-06T14:30:35.929Z">
+<meta property="article:author" content="Zqxg">
+<meta property="article:tag" content="数组">
+<meta property="article:tag" content="滑动窗口">
+<meta name="twitter:card" content="summary">
 
-{% block sidebar %}
-  {{ sidebar_template.render(true) }}
-{% endblock %}
+<link rel="canonical" href="http://zqxg.github.io/2023/10/24/%E9%95%BF%E5%BA%A6%E6%9C%80%E5%B0%8F%E7%9A%84%E5%AD%90%E6%95%B0%E7%BB%84/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'ZH'
+  };
+</script>
+
+  <title>长度最小的子数组 | 小锅的窝</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="تشغيل شريط التصفح">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">小锅的窝</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>الأرشيفات</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="ZH">
+    <link itemprop="mainEntityOfPage" href="http://zqxg.github.io/2023/10/24/%E9%95%BF%E5%BA%A6%E6%9C%80%E5%B0%8F%E7%9A%84%E5%AD%90%E6%95%B0%E7%BB%84/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Zqxg">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="小锅的窝">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          长度最小的子数组
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">نُشر في</span>
+
+              <time title="أُنشأ: 2023-10-24 00:00:00" itemprop="dateCreated datePublished" datetime="2023-10-24T00:00:00+08:00">2023-10-24</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">عُدل في</span>
+                <time title="عُدل: 2023-12-06 22:30:35" itemprop="dateModified" datetime="2023-12-06T22:30:35+08:00">2023-12-06</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">في</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%AE%97%E6%B3%95/" itemprop="url" rel="index"><span itemprop="name">算法</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h3><ul>
+<li>给定一个含有 n 个正整数的数组和一个正整数 s </li>
+<li>找出该数组中满足其<code>和 ≥ s</code> 的<code>长度最小</code>的 <code>连续</code> 子数组，并返回其长度。</li>
+<li>如果不存在符合条件的子数组，返回 0。</li>
+</ul>
+<h3 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h3><ol>
+<li>示例：</li>
+</ol>
+<ul>
+<li>输入：s = 7, nums = [2,3,1,2,4,3]</li>
+<li>输出：2</li>
+<li>解释：子数组 [4,3] 是该条件下的长度最小的子数组。</li>
+</ul>
+<p>提示：</p>
+<ul>
+<li>1 &lt;= target &lt;= 10^9</li>
+<li>1 &lt;= nums.length &lt;= 10^5</li>
+<li>1 &lt;= nums[i] &lt;= 10^5</li>
+</ul>
+<h3 id="滑动窗口"><a href="#滑动窗口" class="headerlink" title="滑动窗口"></a>滑动窗口</h3><ol>
+<li>滑动窗口：<strong>不断的调节子序列的起始位置和终止位置，从而得出我们要想的结果</strong></li>
+</ol>
+<p><em>滑动窗口也可以理解为双指针法的一种，本质上还是使用两个类指针来表示起始位置</em></p>
+<ol start="2">
+<li>滑动窗口常用来解决字符串的匹配问题。  </li>
+</ol>
+<ul>
+<li>匹配问题套路：不满足题意，右移窗口，更新数据；满足题意，左移窗口，更新数据。  </li>
+</ul>
+<ol start="3">
+<li>实现滑动窗口，主要确定如下四点：<br>（1）初始化窗口:<br>初始化左右边界 left = right = 0，把索引闭区间 [left, right] 称为一个「窗口」。<br>（2）寻找可行解：<br>我们先不断地增加 right 指针扩大窗口 [left, right]，直到窗口中的满足可行解。<br>（3）优化可行解：<br>此时，我们停止增加 right，转而不断增加 left 指针缩小窗口 [left, right]，直到窗口中的可行解不再符合要求。同时，每次增加 left，我们都要更新一轮结果。<br>（4）滑动窗口，直至一次遍历结束：<br>重复第 2 和第 3 步，直到 right 到达到的尽头。</li>
+</ol>
+<p><strong>基本模板</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">public void slideWindowTemplate(String nums)&#123;</span><br><span class="line">    int l = 0, r = 0;        //[初始化窗口]</span><br><span class="line">    //codes...               [其他初始化信息,定义一些维护数据的数据结构]</span><br><span class="line">    while(r &lt; nums.length)&#123; //右边框移动</span><br><span class="line">        r++;                 //[增大窗口]</span><br><span class="line">        //codes.....         [更新窗口中的数据] </span><br><span class="line">        while(l &lt; r &amp;&amp; check(xxx) == false)&#123;   //[窗口不满足某种性质]</span><br><span class="line">              l++;             //[缩小窗口]</span><br><span class="line">            //codes...       [维护窗口中的数据]</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h3 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">// 算法：长度最小的子数组  </span><br><span class="line">// 输入：含有n个正整数的数组和一个正整数s  </span><br><span class="line">// 输出：找出该数组中满足其和 ≥ s 的长度最小的 连续 子数组，并返回其长度。没有返回0  </span><br><span class="line">func minSubArrayLen(target int, nums []int) int &#123;  </span><br><span class="line">   // 返回结果数组长度 记录数组和 子数组长度  </span><br><span class="line">   res, sum := len(nums)+1, 0  </span><br><span class="line">   // 滑动窗口 双指针  </span><br><span class="line">   left, right := 0, 0  </span><br><span class="line">   // 右边框移动  </span><br><span class="line">   for ; right &lt; len(nums); right++ &#123;  </span><br><span class="line">      // 更新窗口中的数据  </span><br><span class="line">      sum += nums[right]  </span><br><span class="line">      // 窗口内的和大于等于target 移动左边框  </span><br><span class="line">      for ; sum &gt;= target; left++ &#123;  </span><br><span class="line">         // 更新子数组长度  </span><br><span class="line">         subLength := right - left + 1  </span><br><span class="line">         if subLength &lt; res &#123;  </span><br><span class="line">            res = subLength  </span><br><span class="line">         &#125;  </span><br><span class="line">         // 移除窗口中的数据  </span><br><span class="line">         sum -= nums[left]  </span><br><span class="line">      &#125;  </span><br><span class="line">   &#125;  </span><br><span class="line">   if res &gt; len(nums) &#123;  </span><br><span class="line">      return 0  </span><br><span class="line">   &#125; else &#123;  </span><br><span class="line">      return res  </span><br><span class="line">   &#125;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="相关题目"><a href="#相关题目" class="headerlink" title="相关题目"></a>相关题目</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/fruit-into-baskets/">904.水果成篮</a></li>
+<li><a target="_blank" rel="noopener" href="https://leetcode.cn/problems/minimum-window-substring/">76. 最小覆盖子串</a></li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">// 算法：最长连续两个元素子数组  </span><br><span class="line">// 输入：含有n个正整数的数组  </span><br><span class="line">// 输出：含有最大连续两个元素的子数组长度  </span><br><span class="line">func totalFruit(fruits []int) (ans int) &#123;  </span><br><span class="line">   cnt := map[int]int&#123;&#125;  </span><br><span class="line">   left := 0  </span><br><span class="line">   for right, x := range fruits &#123;  </span><br><span class="line">      cnt[x]++  </span><br><span class="line">      // 第三个元素 移动窗口  </span><br><span class="line">      for len(cnt) &gt; 2 &#123;  </span><br><span class="line">         y := fruits[left]  </span><br><span class="line">         cnt[y]--  </span><br><span class="line">         if cnt[y] == 0 &#123;  </span><br><span class="line">            delete(cnt, y)  </span><br><span class="line">         &#125;  </span><br><span class="line">         left++  </span><br><span class="line">      &#125;  </span><br><span class="line">      ans = max(ans, right-left+1)  </span><br><span class="line">   &#125;  </span><br><span class="line">   return  </span><br><span class="line">&#125;  </span><br><span class="line">  </span><br><span class="line">func max(a, b int) int &#123;  </span><br><span class="line">   if b &gt; a &#123;  </span><br><span class="line">      return b  </span><br><span class="line">   &#125;  </span><br><span class="line">   return a  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>在前面的基础上引入了一个字典，动态的判断是否出现第三个元素</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">// 算法：最小覆盖子串  </span><br><span class="line">// 输入：一个字符串 s 、一个字符串 t</span><br><span class="line">// 输出：返回 s 中涵盖 t 所有字符的最小子串 。不存在返回 &quot;&quot;func minWindow(s string, t string) string &#123;  </span><br><span class="line">   var res string  </span><br><span class="line">   // 初始化字典  </span><br><span class="line">   cnt := map[byte]int&#123;&#125;  </span><br><span class="line">   for _, value := range t &#123;  </span><br><span class="line">      cnt[byte(value)]++  </span><br><span class="line">   &#125;  </span><br><span class="line">   // 记录长度  </span><br><span class="line">   min := len(s) + 1  </span><br><span class="line">   left, right := 0, 0  </span><br><span class="line">   for ; right &lt; len(s); right++ &#123;  </span><br><span class="line">      // 发现有t数组元素就-1  </span><br><span class="line">      cnt[s[right]]--  </span><br><span class="line">      // 窗口改变条件 cnt内的数值都&lt;=0  </span><br><span class="line">      for check(cnt) &#123;  </span><br><span class="line">         if right-left+1 &lt; min &#123;  </span><br><span class="line">            min = right - left + 1  </span><br><span class="line">            // 记录最小的字符串  </span><br><span class="line">            res = s[left : right+1]  </span><br><span class="line">         &#125;  </span><br><span class="line">         // 左指针移动 碰到的元素+1  </span><br><span class="line">         cnt[s[left]]++  </span><br><span class="line">         left++  </span><br><span class="line">      &#125;  </span><br><span class="line">   &#125;  </span><br><span class="line">   return res  </span><br><span class="line">&#125;  </span><br><span class="line">  </span><br><span class="line">func check(m map[byte]int) bool &#123;  </span><br><span class="line">   for _, x := range m &#123;  </span><br><span class="line">      // 如果有0的就返回 false      </span><br><span class="line">      if x &gt; 0 &#123;  </span><br><span class="line">         return false  </span><br><span class="line">      &#125;  </span><br><span class="line">   &#125;  </span><br><span class="line">   return true  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%95%B0%E7%BB%84/" rel="tag"># 数组</a>
+              <a href="/tags/%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3/" rel="tag"># 滑动窗口</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/10/21/%E6%95%B0%E7%BB%84%E7%90%86%E8%AE%BA%E7%9F%A5%E8%AF%86/" rel="prev" title="移除元素">
+      <i class="fa fa-chevron-left"></i> 移除元素
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/" rel="next" title="GoGC的回收机制和混合写屏障">
+      GoGC的回收机制和混合写屏障 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          المحتويات
+        </li>
+        <li class="sidebar-nav-overview">
+          عام
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A2%98%E7%9B%AE"><span class="nav-number">1.</span> <span class="nav-text">题目</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B"><span class="nav-number">2.</span> <span class="nav-text">示例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3"><span class="nav-number">3.</span> <span class="nav-text">滑动窗口</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0"><span class="nav-number">4.</span> <span class="nav-text">代码实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E9%A2%98%E7%9B%AE"><span class="nav-number">5.</span> <span class="nav-text">相关题目</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Zqxg</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">المقالات</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">التصنيفات</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">الوسوم</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zqxg</span>
+</div>
+  <div class="powered-by">تطبيق الموقع <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

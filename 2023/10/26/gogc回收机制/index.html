@@ -1,16 +1,486 @@
-{% extends '_layout.swig' %}
-{% import '_macro/sidebar.swig' as sidebar_template with context %}
+<!DOCTYPE html>
+<html lang="ZH">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
 
-{% block title %}{{ page.title }} | {{ title }}{% endblock %}
+<link rel="stylesheet" href="/css/main.css">
 
-{% block class %}post posts-expand{% endblock %}
 
-{% block content %}
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
 
-  {{ partial('_macro/post.swig', {post: page}) }}
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"zqxg.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
 
-{% endblock %}
+  <meta name="description" content="目录 GC是什么？为什么要有GC？ 基础概念 golang的GC 如何标记 GoV1.3 标记清除法 三色标记法 插入写屏障 删除写屏障 混合写屏障  GC是什么？为什么要有GC？GC 是 garbage collection 的缩写,意思是垃圾回收。  GC是编程语言中提供的自动的内存管理机制，自动释放不需要的内存对象，让出存储器资源。 GC过程中无需程序员手动执行。GC机制在现代很多编程语言都">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GoGC的回收机制和混合写屏障">
+<meta property="og:url" content="http://zqxg.github.io/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/index.html">
+<meta property="og:site_name" content="小锅的窝">
+<meta property="og:description" content="目录 GC是什么？为什么要有GC？ 基础概念 golang的GC 如何标记 GoV1.3 标记清除法 三色标记法 插入写屏障 删除写屏障 混合写屏障  GC是什么？为什么要有GC？GC 是 garbage collection 的缩写,意思是垃圾回收。  GC是编程语言中提供的自动的内存管理机制，自动释放不需要的内存对象，让出存储器资源。 GC过程中无需程序员手动执行。GC机制在现代很多编程语言都">
+<meta property="og:locale">
+<meta property="og:image" content="http://zqxg.github.io/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc1.png">
+<meta property="og:image" content="http://zqxg.github.io/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc2.png">
+<meta property="og:image" content="http://zqxg.github.io/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc3.png">
+<meta property="og:image" content="http://zqxg.github.io/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc4.png">
+<meta property="og:image" content="http://zqxg.github.io/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc5.png">
+<meta property="og:image" content="http://zqxg.github.io/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc6.jpg">
+<meta property="og:image" content="http://zqxg.github.io/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc7.jpg">
+<meta property="og:image" content="http://zqxg.github.io/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc8.jpg">
+<meta property="og:image" content="http://zqxg.github.io/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc9.jpg">
+<meta property="og:image" content="http://zqxg.github.io/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc10.jpg">
+<meta property="og:image" content="http://zqxg.github.io/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc11.jpg">
+<meta property="article:published_time" content="2023-10-25T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-11-27T14:44:43.909Z">
+<meta property="article:author" content="Zqxg">
+<meta property="article:tag" content="golang">
+<meta property="article:tag" content="gc">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://zqxg.github.io/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc1.png">
 
-{% block sidebar %}
-  {{ sidebar_template.render(true) }}
-{% endblock %}
+<link rel="canonical" href="http://zqxg.github.io/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'ZH'
+  };
+</script>
+
+  <title>GoGC的回收机制和混合写屏障 | 小锅的窝</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="تشغيل شريط التصفح">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">小锅的窝</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>الأرشيفات</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="ZH">
+    <link itemprop="mainEntityOfPage" href="http://zqxg.github.io/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Zqxg">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="小锅的窝">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          GoGC的回收机制和混合写屏障
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">نُشر في</span>
+
+              <time title="أُنشأ: 2023-10-26 00:00:00" itemprop="dateCreated datePublished" datetime="2023-10-26T00:00:00+08:00">2023-10-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">عُدل في</span>
+                <time title="عُدل: 2023-11-27 22:44:43" itemprop="dateModified" datetime="2023-11-27T22:44:43+08:00">2023-11-27</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">في</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/golang%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">golang笔记</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h2><ol>
+<li>GC是什么？为什么要有GC？</li>
+<li>基础概念</li>
+<li>golang的GC</li>
+<li>如何标记</li>
+<li>GoV1.3 标记清除法</li>
+<li>三色标记法</li>
+<li>插入写屏障</li>
+<li>删除写屏障</li>
+<li>混合写屏障</li>
+</ol>
+<h2 id="GC是什么？为什么要有GC？"><a href="#GC是什么？为什么要有GC？" class="headerlink" title="GC是什么？为什么要有GC？"></a>GC是什么？为什么要有GC？</h2><p><em>GC</em> 是 garbage collection 的缩写,意思是垃圾回收。</p>
+<ul>
+<li>GC是编程语言中提供的自动的内存管理机制，自动释放不需要的内存对象，让出存储器资源。</li>
+<li>GC过程中无需程序员手动执行。GC机制在现代<strong>很多编程语言</strong>都支持(Java/python/golang)，GC能力的性能与优劣也是不同语言之间对比度指标之一。</li>
+</ul>
+<p>前面说现在很多语言都有GC机制，但是在我们大一学的c++却是没有的一个标准库，所以在当时我们要自己创建内存空间和销毁，可以使我们更好了解底层原理。</p>
+<p>但是全部都要我们程序员自己造轮子，这也太麻烦了。且内存处理是开发人员容易出现问题的地方，所以现在很多语言都提供了自己的垃圾回收装置</p>
+<h2 id="基础概念"><a href="#基础概念" class="headerlink" title="基础概念"></a>基础概念</h2><p> <strong>一个标准进程的内存模型</strong></p>
+<ul>
+<li>code area（方法区）</li>
+<li>static area 静态变量</li>
+<li>heap (堆)</li>
+<li>stack (栈)<br><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc1.png"><br>golang程序，是一个进程</li>
+</ul>
+<ul>
+<li>一个进程对应着多个OS线程，又根据[[MPG模型]]，对应着很多个协程；</li>
+<li>对所有的goroutinue来说，heap可以看作是共享的区域</li>
+<li>但是每个goroutinue，都有只属于自己的stack</li>
+</ul>
+<p><strong>一般程序的内存管理</strong><br>stack会随着线程执行code area的stack frame，自动pop、push、remove；<br>stack里的变量、调用完毕，就随着出栈，自动销毁；<br>但是heap不会，heap内的对象，通常是用stack内或者其它heap对象内的指针变量，对heap内的对象进行操作；<br>这个也叫做对象引用；<br>垃圾回收，garbage collect，回收的就是heap的空间</p>
+<h2 id="如何标记"><a href="#如何标记" class="headerlink" title="如何标记"></a>如何标记</h2><p>在 GC 领域里，判断对象存活的主流思路是两个，「引用计数」和「可达性分析」。</p>
+<ol>
+<li><p> <strong>引用计数</strong><br>顾名思义，引用计数的思路就是给每个对象进行计数，每被其它对象引用一次，计数就 +1，引用失效后，计数就 -1。当计数器的数值为 0，就意味着它没有被使用，可以回收。</p>
+</li>
+<li><p><strong>可达性分析</strong><br>可达性分析的思路就是通过引用链路判断对象是否可被触达，如果能触达说明该对象当前正在被使用，不可回收;反之，没有触达到的对象则认为是无使用的，可以回收。</p>
+</li>
+</ol>
+<p>这个引用链路的结构类似于有向有环图，但是根节点不止一个，是一个集合，称之为 GCRoots。</p>
+<p>目前主流的 GC 机制大多用的是「可达性分析」这条路线，我们Golang 的GC机制也是如此。</p>
+<p>为什么引用计数不好用呢?<br>因为它有一个特别严重的问题：<strong>无法处理循环引用。</strong></p>
+<h2 id="清除-mark-and-sweep-算法"><a href="#清除-mark-and-sweep-算法" class="headerlink" title="清除(mark and sweep)算法"></a>清除(mark and sweep)算法</h2><p>主要的步骤：</p>
+<ul>
+<li>标记(Mark phase)</li>
+<li>清除(Sweep phase)</li>
+</ul>
+<h3 id="标记清除算法的具体步骤："><a href="#标记清除算法的具体步骤：" class="headerlink" title="标记清除算法的具体步骤："></a>标记清除算法的具体步骤：</h3><p><strong>第一步</strong>，暂停程序业务逻辑, 遍历gcRoot，分类出可达和不可达的对象，然后做上标记。<br><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc2.png"></p>
+<ul>
+<li>可达对象：从程序根节点出发，可以到达的对象 如1-2-3，4-7</li>
+<li>不可达的对象：反之 5 6</li>
+</ul>
+<p><strong>第二步</strong>, 开始标记，程序找出它所有可达的对象，并做上标记<br><strong>第三步</strong>,  标记完了之后，然后开始清除未标记的对象. 结果如下。<br><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc3.png"><br>操作非常简单，但是有一点需要额外注意：mark and sweep算法在执行的时候，需要程序暂停！<br>即 <code>STW(stop the world)</code>，STW的过程中，CPU不执行用户代码，全部用于垃圾回收，这个过程的影响很大，所以STW也是一些回收机制最大的难题和希望优化的点。所以在执行第三步的这段时间，程序会暂定停止任何工作，卡在那等待回收执行完毕。</p>
+<p><strong>第四步</strong>, 停止暂停，让程序继续跑。然后循环重复这个过程，直到process程序生命周期结束。</p>
+<p>以上便是标记-清除（mark and sweep）回收的算法。</p>
+<h3 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h3><p>标记清除算法明了，过程鲜明干脆，但是通过上面的步骤演示，我们也能发现它存在严重的问题：</p>
+<ul>
+<li>STW，stop the world；让程序暂停，程序出现卡顿 **(重要问题)**；</li>
+<li>标记需要扫描整个heap；</li>
+<li>清除数据会产生heap碎片。</li>
+</ul>
+<p>因为[[GC回收机制-01]]中提到了heap可以看作是所有的goroutinue共享的区域，因此我们需要扫描整个heap（heap碎片这个概念其实可以类比我们学习的操作系统中的内存碎片）</p>
+<p>Go V1.3版本之前：</p>
+<p><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc4.png"></p>
+<p>Go V1.3 做了简单的优化,将STW的步骤提前, 减少STW暂停的时间范围.</p>
+<p><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc5.png"></p>
+<p>但是无论怎么优化，Go V1.3都面临这个一个重要问题，就是<strong>mark-and-sweep 算法会暂停整个程序</strong> 。</p>
+<p>Go是如何面对并这个问题的呢？接下来G V1.5版本 就用<strong>三色并发标记法</strong>来优化这个问题.</p>
+<p>后面的内容为手写笔记</p>
+<h2 id="三色标记法"><a href="#三色标记法" class="headerlink" title="三色标记法"></a>三色标记法</h2><p><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc6.jpg"><br><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc7.jpg"></p>
+<h2 id="插入写屏障"><a href="#插入写屏障" class="headerlink" title="插入写屏障"></a>插入写屏障</h2><p><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc8.jpg"></p>
+<h2 id="删除写屏障-amp-混合写屏障"><a href="#删除写屏障-amp-混合写屏障" class="headerlink" title="删除写屏障&amp;混合写屏障"></a>删除写屏障&amp;混合写屏障</h2><p><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc9.jpg"><br><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc10.jpg"><br><img src="/2023/10/26/gogc%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6/gc11.jpg"></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/golang/" rel="tag"># golang</a>
+              <a href="/tags/gc/" rel="tag"># gc</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/10/24/%E9%95%BF%E5%BA%A6%E6%9C%80%E5%B0%8F%E7%9A%84%E5%AD%90%E6%95%B0%E7%BB%84/" rel="prev" title="长度最小的子数组">
+      <i class="fa fa-chevron-left"></i> 长度最小的子数组
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/12/06/%E7%A7%BB%E9%99%A4%E5%85%83%E7%B4%A0/" rel="next" title="">
+       <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          المحتويات
+        </li>
+        <li class="sidebar-nav-overview">
+          عام
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%AE%E5%BD%95"><span class="nav-number">1.</span> <span class="nav-text">目录</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GC%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E6%9C%89GC%EF%BC%9F"><span class="nav-number">2.</span> <span class="nav-text">GC是什么？为什么要有GC？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5"><span class="nav-number">3.</span> <span class="nav-text">基础概念</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E6%A0%87%E8%AE%B0"><span class="nav-number">4.</span> <span class="nav-text">如何标记</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B8%85%E9%99%A4-mark-and-sweep-%E7%AE%97%E6%B3%95"><span class="nav-number">5.</span> <span class="nav-text">清除(mark and sweep)算法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%87%E8%AE%B0%E6%B8%85%E9%99%A4%E7%AE%97%E6%B3%95%E7%9A%84%E5%85%B7%E4%BD%93%E6%AD%A5%E9%AA%A4%EF%BC%9A"><span class="nav-number">5.1.</span> <span class="nav-text">标记清除算法的具体步骤：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%BA%E7%82%B9"><span class="nav-number">5.2.</span> <span class="nav-text">缺点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E6%B3%95"><span class="nav-number">6.</span> <span class="nav-text">三色标记法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8F%92%E5%85%A5%E5%86%99%E5%B1%8F%E9%9A%9C"><span class="nav-number">7.</span> <span class="nav-text">插入写屏障</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%A0%E9%99%A4%E5%86%99%E5%B1%8F%E9%9A%9C-amp-%E6%B7%B7%E5%90%88%E5%86%99%E5%B1%8F%E9%9A%9C"><span class="nav-number">8.</span> <span class="nav-text">删除写屏障&amp;混合写屏障</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Zqxg</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">المقالات</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">التصنيفات</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">الوسوم</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zqxg</span>
+</div>
+  <div class="powered-by">تطبيق الموقع <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
