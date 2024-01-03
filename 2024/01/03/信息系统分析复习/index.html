@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"zqxg.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="一、数据抽象 什么是数据抽象数据抽象是对实际的人、物、事和概念进行人为处理，抽取所关心的共同特性，忽略非本质的细节，并把这些特性用各种概念精确地加以描述，这些概念组成了某种模型。  什么是数据类型的接口接口泛指实体把自己提供给外界的一种抽象化物（可以为另一实体），用以由内部操作分离出外部沟通方法，使其能被内部修改而不影响外界其他实体与其交互的方式。  Java语言如何限定类型的接口？    Jav">
+<meta property="og:type" content="article">
+<meta property="og:title" content="信息系统分析复习资料">
+<meta property="og:url" content="http://zqxg.github.io/2024/01/03/%E4%BF%A1%E6%81%AF%E7%B3%BB%E7%BB%9F%E5%88%86%E6%9E%90%E5%A4%8D%E4%B9%A0/index.html">
+<meta property="og:site_name" content="小锅的窝">
+<meta property="og:description" content="一、数据抽象 什么是数据抽象数据抽象是对实际的人、物、事和概念进行人为处理，抽取所关心的共同特性，忽略非本质的细节，并把这些特性用各种概念精确地加以描述，这些概念组成了某种模型。  什么是数据类型的接口接口泛指实体把自己提供给外界的一种抽象化物（可以为另一实体），用以由内部操作分离出外部沟通方法，使其能被内部修改而不影响外界其他实体与其交互的方式。  Java语言如何限定类型的接口？    Jav">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-01-02T16:00:00.000Z">
+<meta property="article:modified_time" content="2024-01-03T05:19:28.197Z">
+<meta property="article:author" content="蒸汽小锅">
+<meta property="article:tag" content="设计模式">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://zqxg.github.io/2024/01/03/%E4%BF%A1%E6%81%AF%E7%B3%BB%E7%BB%9F%E5%88%86%E6%9E%90%E5%A4%8D%E4%B9%A0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>信息系统分析复习资料 | 小锅的窝</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">小锅的窝</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://zqxg.github.io/2024/01/03/%E4%BF%A1%E6%81%AF%E7%B3%BB%E7%BB%9F%E5%88%86%E6%9E%90%E5%A4%8D%E4%B9%A0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://avatars.githubusercontent.com/u/116969040?s=400&u=4b1ffd148b531b77bdc04de4c3a790535c920689&v=4">
+      <meta itemprop="name" content="蒸汽小锅">
+      <meta itemprop="description" content="写点小东西">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="小锅的窝">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          信息系统分析复习资料
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2024-01-03 00:00:00 / 修改时间：13:19:28" itemprop="dateCreated datePublished" datetime="2024-01-03T00:00:00+08:00">2024-01-03</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%A4%8D%E4%B9%A0/" itemprop="url" rel="index"><span itemprop="name">复习</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="一、数据抽象"><a href="#一、数据抽象" class="headerlink" title="一、数据抽象"></a>一、数据抽象</h2><ol>
+<li><p><strong>什么是数据抽象</strong><br>数据抽象是对实际的人、物、事和概念进行人为处理，抽取所关心的共同特性，忽略非本质的细节，并把这些特性用各种概念精确地加以描述，这些概念组成了某种模型。</p>
+</li>
+<li><p><strong>什么是数据类型的接口</strong><br>接口泛指实体把自己提供给外界的一种抽象化物（可以为另一实体），用以由内部操作分离出外部沟通方法，使其能被内部修改而不影响外界其他实体与其交互的方式。</p>
+</li>
+<li><p><strong>Java语言如何限定类型的接口？</strong></p>
+</li>
+</ol>
+<ul>
+<li>Java接口是一系列方法的声明，是一些方法特征的集合，一个接口只有方法的特征没有方法的实现，因此这些方法可以在不同的地方被不同的类实现，而这些实现可以具有不同的行为（功能）。</li>
+<li>在Java中，你可以使用泛型（Generics）来限定接口的类型。通过泛型，你可以在接口中定义参数化类型，使得接口可以与不同类型的数据一起使用，提高代码的灵活性和类型安全性。</li>
+</ul>
+<ol start="4">
+<li><strong>数据抽象与面向对象之间的关系？</strong></li>
+</ol>
+<p> <strong>数据抽象：</strong>  </p>
+<ul>
+<li>数据抽象是一种编程思想，它强调将数据的表示和数据的操作分离，将关注点放在数据的本质和行为上。</li>
+<li>抽象是通过隐藏不必要的细节、提取关键特征，将复杂的现实问题简化为程序设计中的模型。这种抽象使得程序更易于理解、维护和扩展。</li>
+<li>在面向对象的编程中，数据抽象通过类和对象来实现，类定义了对象的属性（数据）和方法（行为），并通过访问控制来限制对数据的直接访问。</li>
+</ul>
+<p><strong>面向对象：</strong></p>
+<ul>
+<li>面向对象是一种编程范式，它以对象为中心，将数据和相关操作封装在一起，通过定义类和对象来组织和管理代码。</li>
+<li>面向对象编程的核心思想包括封装、继承和多态。封装使得对象的内部实现对外部隐藏，继承允许新的类继承和重用已有类的特性，多态允许不同类的对象对同一消息做出不同的响应。</li>
+<li>面向对象的方法使得程序更加模块化，提高了代码的重用性和可维护性。</li>
+</ul>
+<p><strong>关系：</strong></p>
+<ul>
+<li>面向对象编程通过类和对象的抽象概念，实现了数据的抽象。类定义了数据的结构和行为，对象则是类的实例，包含了具体的数据值。</li>
+<li>数据抽象通过隐藏底层实现细节，暴露出对外接口，使得使用者可以关注对象的高层行为而不必关心内部实现。这种抽象有助于降低复杂性，提高代码的可理解性和可维护性。</li>
+</ul>
+<h2 id="二、LSP"><a href="#二、LSP" class="headerlink" title="二、LSP"></a>二、LSP</h2><h3 id="面向对象的三大原则？"><a href="#面向对象的三大原则？" class="headerlink" title="面向对象的三大原则？"></a>面向对象的三大原则？</h3><ol>
+<li><strong>单一职责原则（Single Responsibility Principle，SRP）：</strong><ul>
+<li>一个类应该只有一个引起变化的原因，即一个类应该只有一个责任。</li>
+<li>这意味着一个类应该只有一个引起它变化的原因，这样如果需要修改类，只有一个地方需要修改。这有助于降低耦合性，提高类的可维护性。</li>
+</ul>
+</li>
+<li><strong>开闭原则（Open/Closed Principle，OCP）：</strong><ul>
+<li>软件实体（类、模块、函数等）应该对扩展开放，对修改关闭。</li>
+<li>这意味着当需要添加新功能时，不应该修改已有的代码，而是通过扩展现有代码来实现。这样可以保持现有代码的稳定性，降低引入新功能时的风险。</li>
+</ul>
+</li>
+<li><strong>里氏替换原则（Liskov Substitution Principle，LSP）：</strong><ul>
+<li>所有引用基类的地方必须能够透明地使用其子类的对象，即子类必须能够替代基类。</li>
+<li>这意味着继承关系应该是一个 “is-a” 关系，子类应该能够完全替代父类而不引起问题。遵循 LSP 有助于确保代码的稳定性和可靠性。</li>
+</ul>
+</li>
+</ol>
+<h3 id="什么是里氏替换原则（LSP）及其意义"><a href="#什么是里氏替换原则（LSP）及其意义" class="headerlink" title="什么是里氏替换原则（LSP）及其意义?"></a>什么是里氏替换原则（LSP）及其意义?</h3><ol>
+<li>要更直观理解 LSP，可以简化为以下两个要点：</li>
+</ol>
+<ul>
+<li><strong>子类必须保持父类的行为：</strong> 子类应该能够替代父类而不改变程序的正确性。即，对于任何父类被用到的地方，都可以用其子类来替代而不引起错误。</li>
+<li> <strong>保持一致的接口：</strong> 子类必须保持与其父类一致的接口。这意味着子类应该实现父类定义的所有方法，同时保持方法签名和预期行为。</li>
+</ul>
+<ol start="2">
+<li>LSP 的意义主要体现在以下几个方面：</li>
+</ol>
+<ul>
+<li><strong>可替代性：</strong> LSP确保派生类可以替代其基类，而不引起使用基类的代码出现错误。这意味着代码可以更加灵活，可以使用基类的地方都能够使用派生类，从而实现多态性。</li>
+<li> <strong>稳定性和一致性：</strong> LSP强调子类型必须保持与其父类型一致的接口和行为。这样一来，使用基类的代码不需要关心具体是哪个子类，只需要知道它们可以替代基类，这保持了程序的稳定性和一致性。</li>
+<li> <strong>代码的可维护性：</strong> 遵循LSP有助于提高代码的可维护性。当系统需要扩展时，可以通过添加新的子类而不影响现有代码，从而降低了系统的耦合度，使得系统更易于理解、扩展和维护。</li>
+</ul>
+<h3 id="从LSP解释什么是继承，什么是多态？"><a href="#从LSP解释什么是继承，什么是多态？" class="headerlink" title="从LSP解释什么是继承，什么是多态？"></a>从LSP解释什么是继承，什么是多态？</h3><ol>
+<li><strong>继承：</strong><ul>
+<li>继承是面向对象编程中的一种机制，允许一个类（子类或派生类）继承另一个类（父类或基类）的属性和方法。子类可以重用父类的代码，同时可以添加、修改或覆盖父类的行为。</li>
+<li>LSP强调了继承关系中的可替代性，即子类应该能够替代其基类而不引起程序错误。这意味着在使用继承时，子类应该保持与其父类一致的接口和行为，以确保对基类的使用在替代为子类时不会产生意外结果。</li>
+</ul>
+</li>
+<li><strong>多态：</strong><ul>
+<li>多态是面向对象编程中的一个重要概念，指的是同一操作对于不同对象可以有不同的解释。多态允许同一个方法名在不同的类中具有不同的实现，使得代码更加灵活、可扩展和可维护。</li>
+<li>在继承关系中，多态表现为通过基类的引用或指针调用派生类的方法。基类定义了一个共同的接口，而不同的子类实现了该接口的不同版本。使用基类的引用或指针调用方法时，实际执行的是对应子类的方法。</li>
+<li>LSP对多态的实现有着直接的影响，因为只有当子类能够替代其基类时，多态才能够正常工作。如果子类不符合基类的契约，可能导致多态引发错误。</li>
+</ul>
+</li>
+</ol>
+<p>继承和多态是面向对象编程中两个重要的概念，它们通过LSP关注了继承关系中的正确性和稳定性。通过遵循LSP，继承关系中的子类可以更自由地替代其基类，从而实现了多态性。这样的设计使得代码更具灵活性，能够适应变化，并保持了良好的可维护性。</p>
+<h3 id="介绍遵循LSP的四种形式？"><a href="#介绍遵循LSP的四种形式？" class="headerlink" title="介绍遵循LSP的四种形式？"></a>介绍遵循LSP的四种形式？</h3><p>遵循里氏替换原则（Liskov Substitution Principle，LSP）的四种形式是由Barbara Liskov在其原始论文中提出的。这四种形式帮助解释了LSP的具体要求，确保子类型可以有效地替代其基类型。这些形式包括：</p>
+<ol>
+<li><strong>协变返回类型（Covariant Return Types）：</strong><ul>
+<li>如果S是T的子类型，那么S的方法的返回类型必须是T方法的返回类型的子类型。</li>
+<li>换句话说，子类的方法可以返回父类方法的返回类型的子类型，但不能返回父类方法返回类型的超类型。</li>
+</ul>
+</li>
+<li><strong>逆变参数类型（Contravariant Parameter Types）：</strong><ul>
+<li>如果S是T的子类型，那么S的方法的参数类型必须是T方法的参数类型的超类型。</li>
+<li>这意味着子类的方法可以接受比父类方法更广泛的参数类型，但不能接受比父类方法更狭窄的参数类型。</li>
+</ul>
+</li>
+<li><strong>协变参数类型和逆变返回类型（Covariant Parameter Types and Contravariant Return Types）：</strong><ul>
+<li>这是协变参数类型和逆变返回类型两者的结合。如果S是T的子类型，那么S的方法的参数类型必须是T方法的参数类型的超类型，并且S的方法的返回类型必须是T方法的返回类型的子类型。</li>
+</ul>
+</li>
+<li><strong>不变类型（Invariant Types）：</strong><ul>
+<li>如果S是T的子类型，那么S的方法的参数类型和返回类型必须与T方法的参数类型和返回类型相同，不能有任何类型变化。</li>
+<li>这是最保守的形式，要求子类的方法参数和返回类型与父类的完全一致。</li>
+</ul>
+</li>
+</ol>
+<h2 id="三、抽象依赖原则"><a href="#三、抽象依赖原则" class="headerlink" title="三、抽象依赖原则"></a>三、抽象依赖原则</h2><h3 id="为什么要有这个原则以及其定义？"><a href="#为什么要有这个原则以及其定义？" class="headerlink" title="为什么要有这个原则以及其定义？"></a>为什么要有这个原则以及其定义？</h3><p>抽象依赖原则（Dependency Inversion Principle，DIP）是SOLID原则中的一项，它强调高层模块不应该依赖于低层模块，两者都应该依赖于抽象。</p>
+<ol>
+<li>定义:</li>
+</ol>
+<ul>
+<li> 高层模块不应该依赖于低层模块。两者都应该依赖于抽象。</li>
+<li>抽象不应该依赖于细节。细节应该依赖于抽象。</li>
+</ul>
+<ol start="2">
+<li>这个原则的提出是为了解决软件设计中的一些常见问题：</li>
+</ol>
+<ul>
+<li><strong>灵活性和可维护性：</strong> 当高层模块直接依赖于低层模块时，系统的灵活性和可维护性会降低，因为对低层模块的修改可能会影响到高层模块。</li>
+<li><strong>复用性：</strong> 直接依赖于具体实现会导致代码的耦合性增加，从而降低了模块的可复用性。</li>
+<li><strong>测试性：</strong> 当高层模块直接依赖于低层模块时，测试高层模块可能会变得更加困难，因为必须考虑到低层模块的具体实现。</li>
+</ul>
+<p>通过使用抽象依赖原则，我们可以将高层模块与低层模块解耦，并通过引入抽象来减少模块之间的直接依赖。这样可以提高系统的灵活性、可维护性和可测试性，同时提高代码的复用性。</p>
+<p>在实践中，抽象依赖原则通常与依赖注入（Dependency Injection）一起使用，通过将依赖关系的创建和维护委托给外部容器，实现了依赖关系的反转。这使得系统更容易扩展和维护。</p>
+<h3 id="抽象依赖原则的使能工具有什么特点？"><a href="#抽象依赖原则的使能工具有什么特点？" class="headerlink" title="抽象依赖原则的使能工具有什么特点？"></a>抽象依赖原则的使能工具有什么特点？</h3><p>抽象依赖原则的实现通常涉及使用依赖注入（Dependency Injection，DI）或依赖反转容器（Dependency Inversion Container）等使能工具。这些工具有一些特点，有助于在软件设计中实现抽象依赖原则：</p>
+<ol>
+<li><strong>依赖注入：</strong> 依赖注入是实现抽象依赖原则的一种方式，它通过将依赖关系从高层模块传递给低层模块，从而避免了高层模块直接依赖于具体的低层模块。依赖注入可以通过构造函数注入、方法注入、属性注入等方式来实现。</li>
+<li><strong>接口和抽象类：</strong> 使用接口和抽象类定义抽象，通过依赖注入将具体实现注入到高层模块。这样，高层模块只依赖于抽象而不依赖于具体实现。</li>
+<li><strong>依赖反转容器：</strong> 依赖反转容器是一种实现抽象依赖原则的工具，它负责创建和维护对象之间的依赖关系。容器将控制权从高层模块转移到容器，从而实现了依赖的反转。</li>
+<li><strong>配置：</strong> 使用配置文件或其他外部配置方式，将具体实现类的信息从代码中分离出来。这使得在不修改代码的情况下可以更改具体实现，从而实现了抽象依赖原则。</li>
+<li><strong>接口隔离：</strong> 遵循接口隔离原则，定义细粒度的接口，使得高层模块只依赖于其需要的接口，而不依赖于不必要的接口。这有助于减小模块之间的耦合。</li>
+<li><strong>依赖查找：</strong> 通过依赖查找的方式，高层模块可以向容器请求需要的依赖。这种方式可以在运行时动态地解析和获取依赖关系。</li>
+</ol>
+<p>这些工具的共同特点是通过降低模块之间的直接依赖关系，使得高层模块不依赖于具体的低层模块，而是依赖于抽象。这样可以提高系统的灵活性、可维护性和可测试性。选择合适的工具取决于具体的项目需求和架构设计。</p>
+<h3 id="使能工具被称为控制反转工具容器，为什么控制反转工具容器与控制反转没有关系？"><a href="#使能工具被称为控制反转工具容器，为什么控制反转工具容器与控制反转没有关系？" class="headerlink" title="使能工具被称为控制反转工具容器，为什么控制反转工具容器与控制反转没有关系？"></a>使能工具被称为控制反转工具容器，为什么控制反转工具容器与控制反转没有关系？</h3><ol>
+<li>“控制反转”（Inversion of Control，IoC）和”依赖注入”（Dependency Injection，DI）是两个相关但不同的概念。</li>
+</ol>
+<ul>
+<li>控制反转通常指的是将控制权从一个模块或类转移到另一个模块或类，</li>
+<li>而依赖注入是实现控制反转的一种方式。</li>
+<li>使能工具通常被称为”控制反转容器”或”依赖注入容器”，它们并不直接涉及到控制反转，而是实现了依赖注入，即将依赖关系从高层模块传递给低层模块。</li>
+</ul>
+<ol start="2">
+<li>为什么控制反转容器与控制反转没有直接关系呢？</li>
+</ol>
+<ul>
+<li>这是因为”控制反转”一词的广义概念包括了依赖注入，但并不局限于依赖注入。</li>
+<li>控制反转强调的是控制权的转移，而依赖注入是一种实现控制反转的具体方式。</li>
+</ul>
+<ol start="3">
+<li><p>控制反转容器的主要作用是管理和维护对象之间的依赖关系，以及在需要时为对象提供依赖。它通过读取配置、扫描注解等方式，实现了对象的创建、装配和注入，从而实现了依赖注入。在这个过程中，容器负责控制对象的创建和依赖的管理，而不是由对象自己控制。</p>
+</li>
+<li><p>综上所述，尽管控制反转容器实现了依赖注入，但控制反转并不等同于依赖注入，而是一个更广泛的概念。因此，控制反转容器被称为”控制反转容器”是因为它实现了控制反转的一部分，即将依赖关系的控制权从对象自身转移到了容器</p>
+</li>
+</ol>
+<h2 id="四、god创建对象出现空指针异常的原因？（5-6个）"><a href="#四、god创建对象出现空指针异常的原因？（5-6个）" class="headerlink" title="四、god创建对象出现空指针异常的原因？（5~6个）"></a>四、god创建对象出现空指针异常的原因？（5~6个）</h2><ol>
+<li><p><strong>未正确初始化对象引用：</strong> 如果在使用 <code>God</code> 工具类创建对象后，未正确初始化返回的对象引用，就有可能出现空指针异常。</p>
+</li>
+<li><p><strong><code>God</code> 工具类的实现问题：</strong> 如果 <code>God</code> 工具类的实现中存在 bug，导致返回的对象为 null 或者没有正确初始化，就可能引发空指针异常。   ```</p>
+</li>
+<li><p><strong><code>God</code> 工具类返回的对象类型不匹配：</strong> 如果 <code>God</code> 工具类声明返回一个抽象类型，但实际返回的是一个空对象或者不符合预期的类型，也可能导致空指针异常。</p>
+</li>
+</ol>
+<p>要解决这些问题，您可以：</p>
+<ul>
+<li>确保在使用 <code>God</code> 工具类返回的对象之前，进行适当的空引用检查。</li>
+<li>检查 <code>God</code> 工具类的实现，确保它正确地初始化并返回预期类型的对象。</li>
+<li>确保 <code>God</code> 工具类的文档中明确说明了返回对象的类型和初始化状态。</li>
+</ul>
+<p>除了前面提到的可能性外，还有一些其他可能导致 <code>God</code> 工具类创建对象时出现空指针异常的情况：</p>
+<ol>
+<li><p><strong>工具类内部逻辑错误：</strong> <code>God</code> 工具类的内部实现可能存在逻辑错误，导致在创建对象的过程中出现了未处理的异常，从而返回了 <code>null</code> 或者未正确初始化的对象。</p>
+</li>
+<li><p><strong>多线程安全问题：</strong> 如果 <code>God</code> 工具类在多线程环境下使用，可能存在竞态条件或同步问题，导致对象的创建和返回不符合预期，可能引发空指针异常。</p>
+</li>
+<li><p><strong>虚拟机内存问题：</strong> 在一些极端情况下，虚拟机内存不足或者发生了不可预测的错误可能导致对象创建时返回 <code>null</code>。</p>
+<h2 id="五、函数式编程范式"><a href="#五、函数式编程范式" class="headerlink" title="五、函数式编程范式"></a>五、函数式编程范式</h2><h3 id="函数式编程范式核心观念"><a href="#函数式编程范式核心观念" class="headerlink" title="函数式编程范式核心观念"></a>函数式编程范式核心观念</h3></li>
+</ol>
+<p><strong>函数编程范式的核心观念：以λ表达式构造一切。</strong></p>
+<ol>
+<li><p>什么是λ表达式呢？普通的数学函数如f(x)=x+1，功能是给其参数x加上1。为了将数学函数表示成计算机界常用的表达式，可以换一种写法：λx.(x+1)，读成“对于参数x，x+1”(假定操作符+，数字1已经被定义)。</p>
+</li>
+<li><p>合法的λ表达式的递归定义如下：</p>
+</li>
+</ol>
+<ul>
+<li>变量(和文字) 是一个λ表达式。</li>
+<li>操作符和λ表达式组成的表达式，是λ表达式。(可以归入函数应用)</li>
+<li>函数定义和函数应用是λ表达式。</li>
+</ul>
+<ol start="3">
+<li>特性：</li>
+</ol>
+<ul>
+<li>数据的不变性。</li>
+<li>使用递归作为循环的机制。</li>
+<li>函数没有副作用和引用透明。</li>
+<li>支持闭包(closures)和高阶函数(higher-order functions)。</li>
+<li>支持懒惰计算(lazy evaluation)。</li>
+</ul>
+<h3 id="什么是lambda表达式？"><a href="#什么是lambda表达式？" class="headerlink" title="什么是lambda表达式？"></a>什么是lambda表达式？</h3><ol>
+<li><p>定义：<br>它是一个匿名函数，Lambda表达式基于数学中的λ演算得名，直接对应于其中的lambda抽象(lambda abstraction)，是一个匿名函数，即没有函数名的函数。Lambda 是一个匿名函数，可以把 Lambda表达式 理解为是一段可以传递的代码 (将代码像数据一样进行传递)。可以写出更简洁、更灵活的代码。</p>
+</li>
+<li><p>在丘奇的λ演算中，函数定义有两个特点。</p>
+</li>
+</ol>
+<ul>
+<li><strong>λ表达式都是匿名函数</strong>。函数定义指构造一个函数，W是参数为变量x的λ表达式，则λx . W是λ表达式，此时W是函数体，参数就是变量x。例如(lambda (x) (* x x))描述了一个计算过程。为匿名函数取一个名字，或者说定义一个变量，能够方便地多次使用该函数，通常会受到编程语言的支持。</li>
+<li><strong>每个函数只有一个输入参数</strong>，如λn. λm.λf.λx**.** ((n f) (++ m) )。而在编程实践中，函数通常可以有一个参数列表。逻辑学家 Haskell Curry证明可以将一个拥有多个参数的函数转化为只有一个参数的多个函数的连续调用，这一转化过程称为对拥有多个参数的函数的currying/柯里化。</li>
+</ul>
+<h3 id="为什么Scame语言里用递归实现循环？"><a href="#为什么Scame语言里用递归实现循环？" class="headerlink" title="为什么Scame语言里用递归实现循环？"></a>为什么Scame语言里用递归实现循环？</h3><p>有几个原因解释了为什么在 Scheme 中更倾向于使用递归来实现循环：</p>
+<ol>
+<li><strong>一致性：</strong> 在 Lisp 系列语言中，递归与其他形式的迭代一样被视为一种迭代控制结构，这带来了一致性。在 Scheme 中，递归和迭代都被视为迭代过程，通过 <code>do</code> 循环、<code>let</code> 形式和递归等方式，可以以一致的方式实现各种迭代。</li>
+<li><strong>简洁性和表达力：</strong> 递归的表达力更强，有时可以更清晰地描述算法。通过递归，程序员可以更直接地表达问题的本质，而无需引入很多额外的控制结构。</li>
+<li><strong>尾递归优化：</strong> Scheme 支持尾递归优化，这是一种递归的特殊形式，可以通过编译器优化为迭代。尾递归优化避免了递归时栈溢出的问题，使得递归在 Scheme 中更加高效。</li>
+<li><strong>函数式编程风格：</strong> Scheme 是一门函数式编程语言，它鼓励使用纯函数、不可变数据以及递归。递归更符合函数式编程的风格，而循环则更强调可变状态。</li>
+<li><strong>灵活性：</strong> 递归允许在不引入可变状态的情况下进行循环，这符合 Scheme 的函数式编程理念。在某些情况下，递归可以提供更灵活和易于理解的解决方案。</li>
+</ol>
+<h3 id="列举函数式编程语言中的常见的特点？"><a href="#列举函数式编程语言中的常见的特点？" class="headerlink" title="列举函数式编程语言中的常见的特点？"></a>列举函数式编程语言中的常见的特点？</h3><ol>
+<li><strong>纯函数（Pure Functions）：</strong><ul>
+<li>函数的输出只由输入参数决定，不依赖于外部状态或可变数据。纯函数没有副作用，执行相同的输入总是产生相同的输出。</li>
+</ul>
+</li>
+<li><strong>不可变性（Immutability）：</strong><ul>
+<li>数据一旦被创建，就不能被修改。不可变性有助于避免副作用、简化并发编程，以及提高程序的可靠性和可维护性。</li>
+</ul>
+</li>
+<li><strong>高阶函数（Higher-Order Functions）：</strong><ul>
+<li>函数可以接受其他函数作为参数，也可以返回函数作为结果。高阶函数支持函数作为一等公民，可以传递、赋值和使用它们。</li>
+</ul>
+</li>
+<li><strong>透明性（Referential Transparency）：</strong><ul>
+<li>相同的输入总是产生相同的输出，这种特性使得函数调用可以在不考虑上下文的情况下替换。透明性有助于代码的理解和优化。</li>
+</ul>
+</li>
+<li><strong>不可变数据结构（Immutable Data Structures）：</strong><ul>
+<li>创建数据结构时，不修改原始数据，而是返回一个新的数据结构。这有助于避免副作用和提高程序的并发性能。</li>
+</ul>
+</li>
+<li><strong>模式匹配（Pattern Matching）：</strong><ul>
+<li>一种用于检查值是否满足某种模式的方式。模式匹配通常用于解构数据结构和匹配不同的模式。</li>
+</ul>
+</li>
+<li><strong>惰性求值（Lazy Evaluation）：</strong><ul>
+<li>仅在需要的时候计算表达式的值，而不是在每次可能用到的地方都进行计算。这有助于提高性能和节省资源。</li>
+</ul>
+</li>
+<li><strong>闭包（Closures）：</strong><ul>
+<li>函数可以捕获和访问其定义时所在的环境中的变量。这使得函数可以保持状态，并且可以在其创建的上下文之外被调用。</li>
+</ul>
+</li>
+<li><strong>不可变性和模式匹配的组合：</strong><ul>
+<li>不可变性和模式匹配通常结合在一起，使得代码更加简洁和表达力更强。</li>
+</ul>
+</li>
+<li><strong>尾递归优化（Tail Recursion Optimization）：</strong><ul>
+<li>某些函数式编程语言支持尾递归优化，可以将递归转化为迭代，避免了栈溢出的问题，提高了性能。</li>
+</ul>
+</li>
+</ol>
+<h2 id="六、高阶函数"><a href="#六、高阶函数" class="headerlink" title="六、高阶函数"></a>六、高阶函数</h2><h3 id="什么是高阶函数？"><a href="#什么是高阶函数？" class="headerlink" title="什么是高阶函数？"></a>什么是高阶函数？</h3><p>大购p35、p21</p>
+<h3 id="闭包"><a href="#闭包" class="headerlink" title="闭包"></a>闭包</h3><ol>
+<li>大购p35、22</li>
+<li>关键特点：</li>
+</ol>
+<ul>
+<li><strong>访问外部变量：</strong> 闭包函数可以访问在其外部定义的变量，即使这些变量在闭包函数被调用时所在的作用域已经不存在了。</li>
+<li><strong>捕获变量状态：</strong> 闭包捕获了其定义时的变量状态。这意味着，即使在闭包函数被调用时，外部变量的值已经发生了变化，闭包仍然会使用在定义时捕获的那个特定状态。</li>
+<li><strong>保持状态：</strong> 闭包允许函数保持状态，即在多次调用之间保持某些值的状态。这对于实现某些模式，如私有变量、记忆化和函数式编程中的一些模式，非常有用。</li>
+<li><strong>保持状态：</strong> 闭包允许函数保持状态，即在多次调用之间保持某些值的状态。这对于实现某些模式，如私有变量、记忆化和函数式编程中的一些模式，非常有用。</li>
+</ul>
+<h3 id="java语言闭包的概念"><a href="#java语言闭包的概念" class="headerlink" title="java语言闭包的概念"></a>java语言闭包的概念</h3><p>Java 8 引入了 Lambda 表达式和函数式接口，虽然 Java 中没有显式的闭包类型，但可以通过 Lambda 表达式和匿名内部类实现类似闭包的功能。</p>
+<p>在 Java 中，闭包可以通过以下方式体现：</p>
+<ol>
+<li><p><strong>Lambda 表达式：</strong> Lambda 表达式是一个匿名函数，可以作为参数传递给方法或赋值给一个变量。Lambda 表达式可以捕获和访问外部的变量，就像闭包一样。</p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ClosureExample</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">outerVariable</span> <span class="operator">=</span> <span class="number">10</span>;</span><br><span class="line"></span><br><span class="line">        <span class="type">Runnable</span> <span class="variable">closure</span> <span class="operator">=</span> () -&gt; &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;Outer variable: &quot;</span> + outerVariable);</span><br><span class="line">        &#125;;</span><br><span class="line"></span><br><span class="line">        closure.run(); <span class="comment">// 输出 &quot;Outer variable: 10&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在上面的例子中，Lambda 表达式中的 <code>outerVariable</code> 就类似于一个被捕获的闭包变量。</p>
+</li>
+<li><p><strong>匿名内部类：</strong> 在 Java 8 之前，可以使用匿名内部类实现类似闭包的效果。匿名内部类可以访问其外部类的成员变量，甚至可以修改外部类的成员变量。</p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ClosureExample</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="type">int</span> <span class="variable">outerVariable</span> <span class="operator">=</span> <span class="number">10</span>;</span><br><span class="line"></span><br><span class="line">        <span class="type">Runnable</span> <span class="variable">closure</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Runnable</span>() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">                System.out.println(<span class="string">&quot;Outer variable: &quot;</span> + outerVariable);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line"></span><br><span class="line">        closure.run(); <span class="comment">// 输出 &quot;Outer variable: 10&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在这个例子中，<code>outerVariable</code> 被标记为 <code>final</code>，以便在匿名内部类中访问。在 Java 8 之后，Lambda 表达式更加简洁，不再要求变量必须为 <code>final</code>。</p>
+</li>
+</ol>
+<h2 id="七、函数接口"><a href="#七、函数接口" class="headerlink" title="七、函数接口"></a>七、函数接口</h2><h3 id="什么是行为参数化？"><a href="#什么是行为参数化？" class="headerlink" title="什么是行为参数化？"></a>什么是行为参数化？</h3><ol>
+<li>大购p19、34</li>
+<li>定义：</li>
+</ol>
+<ul>
+<li>行为参数化是指在调用函数时，将一个函数作为参数传递给另一个函数。这样的机制允许你通过传递不同的行为（函数或代码块）来改变函数的行为，从而使代码更加灵活、可复用和通用。</li>
+<li>在行为参数化的情境下，函数接受一个或多个函数作为参数，并可能返回一个函数。这样的函数通常称为高阶函数，因为它们操作其他函数。这是函数式编程的一个核心概念，也是实现多态性的一种方式。</li>
+</ul>
+<h3 id="行为参数化的意义"><a href="#行为参数化的意义" class="headerlink" title="行为参数化的意义"></a>行为参数化的意义</h3><ol>
+<li>大购p19</li>
+<li>意义：</li>
+</ol>
+<ul>
+<li><strong>灵活性：</strong> 行为参数化使得代码更加灵活，可以通过传递不同的函数或代码块来实现不同的行为。这种灵活性有助于应对变化的需求，使得代码更容易适应不同的情境。</li>
+<li><strong>可复用性：</strong> 通过将函数作为参数传递，可以将通用的功能提取出来，形成可复用的函数或代码块。这样的通用性代码可以在不同的地方被重复利用，减少了代码冗余，提高了代码的可维护性。</li>
+<li><strong>通用性：</strong> 行为参数化允许你定义通用的高阶函数，这些函数可以用于处理各种不同类型的行为。例如，一个排序函数可以接受一个比较器作为参数，从而支持不同的排序规则。</li>
+<li><strong>代码简洁性：</strong> 行为参数化可以减少冗余代码，使得代码更加简洁。通过将变化的部分提取为参数，可以保持代码的清晰性和可读性。</li>
+<li><strong>适应变化：</strong> 行为参数化使得代码更容易适应变化，因为可以在不改变函数的定义的情况下，通过传递不同的行为来实现新的功能或逻辑。</li>
+<li><strong>函数式编程：</strong> 行为参数化是函数式编程范式的一部分，它鼓励使用函数作为一等公民，推崇不可变性和纯函数。这种编程方式有助于提高代码的可维护性，降低错误发生的概率。</li>
+</ul>
+<h3 id="介绍java函数的接口，目标类型-p20"><a href="#介绍java函数的接口，目标类型-p20" class="headerlink" title="介绍java函数的接口，目标类型 p20"></a>介绍java函数的接口，目标类型 p20</h3><ol>
+<li><p>函数的接口（Functional Interface）：<br>函数的接口是一个接口，只包含一个抽象方法，可以使用 <code>@FunctionalInterface</code> 注解进行标记。这种类型的接口被设计为函数式接口，用于支持 Lambda 表达式。</p>
+</li>
+<li><p>目标类型（Target Type）：<br>目标类型是指在使用 Lambda 表达式时，Lambda 表达式所需的目标类型。在 Java 中，目标类型通常是一个函数式接口，因为 Lambda 表达式需要与函数式接口进行匹配。</p>
+</li>
+</ol>
+<h3 id="只有唯一抽象方法的接口？（独立子类型，命名类，lambda表达式）"><a href="#只有唯一抽象方法的接口？（独立子类型，命名类，lambda表达式）" class="headerlink" title="只有唯一抽象方法的接口？（独立子类型，命名类，lambda表达式）"></a>只有唯一抽象方法的接口？（独立子类型，命名类，lambda表达式）</h3><p>在Java中，只有一个抽象方法的接口被称为”函数式接口”。Java 8引入了Lambda表达式的支持，这意味着你可以将函数作为一等公民来传递和使用。为了确保接口满足函数式接口的标准，可以使用<code>@FunctionalInterface</code>注解。这个注解不是强制性的，但它可以提供编译器级别的检查，确保接口只包含一个抽象方法。</p>
+<h3 id="八、框架设计者"><a href="#八、框架设计者" class="headerlink" title="八、框架设计者"></a>八、框架设计者</h3><h3 id="什么是框架？介绍框架和工具箱之间的不同"><a href="#什么是框架？介绍框架和工具箱之间的不同" class="headerlink" title="什么是框架？介绍框架和工具箱之间的不同"></a>什么是框架？介绍框架和工具箱之间的不同</h3><p><strong>框架（Framework）：</strong><br>一个框架是一个预先编写好的可重用的代码，它提供了一种通用的结构，以便在这个结构中插入自定义代码，从而解决特定领域的问题。框架通常包含了一系列设计模式、标准实践和工具，以便帮助开发人员更容易地构建和维护软件。框架通常定义了应用程序的骨架，开发者需要根据框架的规范填充具体的业务逻辑。框架的目标是提供一个可扩展、可维护、可重用的基础架构，以促进软件开发的效率和一致性。</p>
+<p><strong>工具箱（Toolkit）：</strong><br>工具箱是一组工具的集合，这些工具通常是独立的、可重用的软件组件，用于执行特定的任务。工具箱提供了一组工具，开发人员可以根据需要选择和组合这些工具，以满足特定的开发要求。工具箱通常不像框架那样具有完整的应用程序结构，而是为了提供一系列单独的功能而设计。</p>
+<p><strong>框架和工具箱之间的不同：</strong></p>
+<ol>
+<li><strong>结构 vs. 工具：</strong><ul>
+<li>框架是一个结构，提供了一个完整的应用程序的基础架构和设计。</li>
+<li>工具箱是一组独立的工具，每个工具解决特定的任务或提供特定的功能。</li>
+</ul>
+</li>
+<li><strong>约束性 vs. 自由度：</strong><ul>
+<li>框架通常具有一定的约束性，要求开发者按照框架的规范来构建应用程序。</li>
+<li>工具箱提供更大的自由度，开发者可以根据需要选择和组合工具。</li>
+</ul>
+</li>
+<li><strong>提供性 vs.使用性：</strong><ul>
+<li>框架提供了应用程序的骨架，开发者需要填充具体的业务逻辑。</li>
+<li>工具箱提供了独立的工具，开发者可以选择性地使用这些工具。</li>
+</ul>
+</li>
+<li><strong>全面性 vs. 单一性：</strong><ul>
+<li>框架通常是全面的，提供了一个完整的解决方案，包括应用程序的结构和设计。</li>
+<li>工具箱通常是单一性的，每个工具解决一个具体的问题。</li>
+</ul>
+</li>
+<li><strong>约束性编程 vs.自由编程：</strong><ul>
+<li>框架可能要求开发者按照框架的规范进行约束性编程。</li>
+<li>工具箱通常更灵活，允许开发者采用更自由的编程方式。</li>
+</ul>
+</li>
+</ol>
+<h3 id="介绍一下控制反转、怎样认识和理解控制反转"><a href="#介绍一下控制反转、怎样认识和理解控制反转" class="headerlink" title="介绍一下控制反转、怎样认识和理解控制反转"></a>介绍一下控制反转、怎样认识和理解控制反转</h3><ol>
+<li>控制反转（Inversion of Control，IoC）是一种软件设计思想，它将传统的程序设计流程颠倒过来，将控制权从程序自身转移到外部容器或框架，以实现更灵活、松耦合的代码结构。</li>
+<li>在传统的程序设计中，应用程序通常控制和调用框架、库或组件，即应用程序是主动的，而框架或库是被动的。而在控制反转中，控制权被颠倒了，框架或容器成为了主动的元素，负责管理和控制应用程序的执行流程。</li>
+</ol>
+<h3 id="介绍java里回调函数的概念及其特点"><a href="#介绍java里回调函数的概念及其特点" class="headerlink" title="介绍java里回调函数的概念及其特点"></a>介绍java里回调函数的概念及其特点</h3><p>在Java中，回调函数是一种常见的编程模式，它允许一个对象（”回调函数”）在另一个对象（”调用者”）发生特定事件或条件满足时被调用。回调函数是一种实现事件驱动编程的方式，它允许程序在异步事件发生时执行某些操作。</p>
+<ol>
+<li><strong>回调函数的概念：</strong></li>
+</ol>
+<ul>
+<li>回调函数的基本思想是将一个可执行的代码块传递给某个函数（或对象），以便在未来某个特定的事件发生时执行。这种方式使得程序可以更加灵活地处理异步操作或特定的事件。</li>
+<li>在Java中，回调函数通常通过接口实现，将一个实现了特定接口的对象传递给调用者，调用者在某个事件发生时调用该接口的方法。</li>
+</ul>
+<ol start="2">
+<li><strong>回调函数的特点：</strong></li>
+</ol>
+<ul>
+<li><strong>松耦合性（Loose Coupling）：</strong> 回调函数使得调用者和回调函数的实现彼此之间更加解耦。调用者不需要知道回调函数的具体实现，只需要知道回调函数遵循了某个接口。 </li>
+<li> <strong>事件驱动（Event-Driven）：</strong> 回调函数通常用于处理事件驱动的场景。例如，当某个按钮被点击、网络请求完成、定时器触发等事件发生时，注册的回调函数将被调用。</li>
+<li><strong>异步编程：</strong> 回调函数是处理异步编程的一种方式。通过注册回调函数，程序可以继续执行其他任务，而不必等待事件完成。</li>
+<li><strong>扩展性（Extensibility）：</strong> 回调函数使得程序更容易扩展。可以轻松地替换或添加新的回调函数，而不必修改调用者的代码。</li>
+</ul>
+<h3 id="回调机制与框架关系"><a href="#回调机制与框架关系" class="headerlink" title="回调机制与框架关系"></a>回调机制与框架关系</h3><p>回调机制是框架中用于实现事件驱动、异步编程和松耦合性的一种关键机制。框架通过提供回调接口和事件触发机制，为开发者提供了一种灵活且可扩展的方式来定制和扩展框架的行为。<br>以下是回调机制与框架关系的一些重要方面：</p>
+<ol>
+<li><strong>事件驱动框架：</strong> 许多框架是事件驱动的，这意味着框架中的某些功能或行为是由事件触发的。回调机制通过让开发者注册回调函数来响应这些事件，从而实现了事件驱动。</li>
+<li><strong>框架提供回调接口：</strong> 框架通常会定义一些回调接口，开发者可以实现这些接口，并通过注册的方式将自己的回调函数传递给框架。框架在特定事件发生时调用这些注册的回调函数。</li>
+<li><strong>松耦合性：</strong> 回调机制在框架中促使了松耦合性的设计。框架不需要知道回调函数的具体实现，只需知道回调函数遵循了特定的接口。这使得框架更加灵活和可扩展。</li>
+<li><strong>异步编程：</strong> 在异步编程中，回调机制是一种常见的方式。例如，当异步任务完成时，框架可以调用注册的回调函数来处理结果，而不是等待任务完成。</li>
+<li><strong>观察者模式：</strong> 回调机制在观察者模式中得到了广泛的应用，观察者模式是一种定义了对象之间一对多依赖关系的设计模式。观察者（回调函数）注册到主题（框架）上，当主题发生变化时，通知所有注册的观察者。</li>
+<li><strong>事件处理框架：</strong> 一些框架专门用于事件处理，它们通过回调机制让开发者注册事件处理函数。这样，当特定事件发生时，框架会调用相应的回调函数。</li>
+<li><strong>Web框架和GUI框架：</strong> 在Web开发和图形用户界面（GUI）开发中，回调机制也是常见的。例如，在Web框架中，可以注册处理HTTP请求的回调函数；在GUI框架中，可以注册处理按钮点击事件的回调函数。</li>
+</ol>
+<h2 id="九、好莱坞法则"><a href="#九、好莱坞法则" class="headerlink" title="九、好莱坞法则"></a>九、好莱坞法则</h2><h3 id="什么是好莱坞法则-p34"><a href="#什么是好莱坞法则-p34" class="headerlink" title="什么是好莱坞法则 p34"></a>什么是好莱坞法则 p34</h3><p>好莱坞法则的关键点包括：</p>
+<ol>
+<li><strong>高层模块决定执行流程：</strong> 在系统设计中，高层模块（或上层组件）决定了整体的执行流程和控制权。低层模块只负责实现特定的功能，由高层模块来调用和控制。</li>
+<li><strong>低层模块提供服务：</strong> 低层模块负责提供特定的服务或实现具体的功能，但它们不决定何时、如何被调用。调用的时机和方式由高层模块来决定。</li>
+<li><strong>减少依赖关系：</strong> 通过将控制流程的权力集中在高层模块，可以减少系统中各个模块之间的直接依赖关系。这种减少依赖的设计有助于提高系统的灵活性和可维护性。</li>
+<li><strong>反馈机制：</strong> 低层模块向高层模块提供反馈，以便高层模块能够了解低层模块的执行状态或结果。这种反馈机制有助于高层模块更好地控制和协调系统的行为。</li>
+</ol>
+<h3 id="说明回调机制与好莱坞法则的关系"><a href="#说明回调机制与好莱坞法则的关系" class="headerlink" title="说明回调机制与好莱坞法则的关系"></a>说明回调机制与好莱坞法则的关系</h3><p>回调机制和好莱坞法则共同强调了高层组件对于低层组件的控制权，以实现更加灵活、可扩展和可维护的设计。在实际的软件开发中，它们经常结合使用，特别是在事件驱动和异步编程的场景中。</p>
+<ol>
+<li><strong>控制反转（Inversion of Control）：</strong> 回调机制是一种实现控制反转的方式。在回调机制中，高层组件将一个低层组件（回调函数）传递给某个接口或框架，使得低层组件在特定事件发生时被调用。这是一种反向的控制流程，即高层组件决定何时调用低层组件。</li>
+<li><strong>好莱坞法则的体现：</strong> 在回调机制中，好莱坞法则的体现在于高层组件对低层组件的控制。高层组件决定了执行流程，它负责调用低层组件的回调函数，而低层组件则负责提供特定的服务或实现特定的功能。</li>
+<li><strong>减少依赖关系：</strong> 好莱坞法则通过减少高层组件对低层组件的直接依赖关系，使系统更加灵活。回调机制通过将低层组件的执行控制权交给高层组件，也有助于减少依赖关系，实现了松耦合的设计。</li>
+<li><strong>反馈机制：</strong> 在回调机制中，低层组件向高层组件提供反馈，通常是通过回调函数的参数或回调接口的方法。这种反馈机制使得高层组件能够了解低层组件的执行状态或结果，符合好莱坞法则中的“我们会打电话给你”的思想。</li>
+<li><strong>框架中的应用：</strong> 在一些框架和库中，回调机制和好莱坞法则常常结合使用，以实现可扩展、可定制的设计。例如，事件驱动框架中，注册事件处理函数就是一种回调机制，并且这些函数通常是在框架内被调用，体现了好莱坞法则。</li>
+</ol>
+<h3 id="模板方法导致一种反向的控制结构，这种结构有时被成为“好莱坞法则”，对这句话如何理解？"><a href="#模板方法导致一种反向的控制结构，这种结构有时被成为“好莱坞法则”，对这句话如何理解？" class="headerlink" title="模板方法导致一种反向的控制结构，这种结构有时被成为“好莱坞法则”，对这句话如何理解？"></a>模板方法导致一种反向的控制结构，这种结构有时被成为“好莱坞法则”，对这句话如何理解？</h3><p>这句话表达了模板方法模式中的设计原则，即通过定义一个算法的骨架，将一些步骤的具体实现交给子类，实现一种反向的控制结构。模板方法模式导致了一种反向的控制结构，即高层模块控制了整个算法的执行流程，并且这种设计思想与好莱坞法则的思想相契合。</p>
+<h2 id="十、模板方法模式"><a href="#十、模板方法模式" class="headerlink" title="十、模板方法模式"></a>十、模板方法模式</h2><h3 id="模板方法模式适用于以下两种主要场景："><a href="#模板方法模式适用于以下两种主要场景：" class="headerlink" title="模板方法模式适用于以下两种主要场景："></a>模板方法模式适用于以下两种主要场景：</h3><ol>
+<li><strong>算法框架定义：</strong> 当一个算法的执行流程在各个子类中基本相同，但其中某些步骤的具体实现可能不同，可以使用模板方法模式。在这种情况下，父类定义一个算法的框架，将具体的实现延迟到子类中。子类通过实现或覆盖父类的抽象方法来提供算法中特定步骤的实现。</li>
+<li><strong>代码复用：</strong> 当有多个子类中存在相似的行为，而且这些行为可以被抽象到一个共同的父类中，以实现代码复用和避免重复实现时，可以使用模板方法模式。通过将共同的行为放在父类中，避免了在每个子类中重复编写相同的代码。</li>
+</ol>
+<p>模板方法模式适用于具有共同执行流程但某些步骤可能有不同实现的场景，以及需要通过代码复用来避免重复实现的场景。</p>
+<h3 id="设计模式与OO关系？"><a href="#设计模式与OO关系？" class="headerlink" title="设计模式与OO关系？"></a>设计模式与OO关系？</h3><p>设计模式与面向对象编程（Object-Oriented Programming，OO）密切相关，设计模式是在面向对象编程中用于解决特定问题、提供通用解决方案的经验总结。</p>
+<ol>
+<li><strong>设计模式是面向对象编程的产物：</strong> 设计模式是在面向对象编程范式下提出的，它们的目的是通过充分利用面向对象编程的特性来解决软件设计和架构中的一些常见问题。因此，设计模式与OO的发展和普及紧密相连。</li>
+<li><strong>设计模式是对OO原则的应用：</strong> 面向对象编程有一系列原则，如封装、继承、多态等。设计模式可以看作是对这些原则的应用，它们提供了在具体场景中如何应用这些原则的指导方针。</li>
+<li><strong>提高面向对象系统的灵活性和可维护性：</strong> 设计模式的使用旨在提高面向对象系统的灵活性和可维护性。通过采用设计模式，开发者可以更好地组织代码、降低耦合性、提高代码的可重用性，从而使得系统更容易扩展、修改和维护。</li>
+<li><strong>设计模式是通用的解决方案：</strong> 设计模式提供了针对特定问题的通用解决方案，这些解决方案经过实践证明是有效且可行的。这使得开发者可以在面对类似问题时，参考设计模式并应用相应的解决方案，提高开发效率和代码质量。</li>
+<li><strong>设计模式支持面向对象编程的思想：</strong> 设计模式的很多概念和实践是与面向对象编程思想相契合的。例如，抽象、封装、继承和多态等概念在设计模式中得到广泛应用。</li>
+<li><strong>设计模式是一种设计经验的总结：</strong> 设计模式不是僵硬的规定，而是对解决问题的一种经验总结。它们提供了一种在特定情境下设计软件的良好实践，而不是硬性的语法规则。</li>
+</ol>
+<h3 id="模板模式意图"><a href="#模板模式意图" class="headerlink" title="模板模式意图"></a>模板模式意图</h3><ol>
+<li><strong>定义算法的框架：</strong> 模板方法在父类中定义了算法的框架，确定了算法执行的步骤和顺序。这些步骤可以包含抽象方法、具体方法和钩子方法。</li>
+<li><strong>延迟实现到子类：</strong> 具体步骤的实现被延迟到子类中。父类中的抽象方法由子类提供具体的实现，从而使得不同的子类可以实现相同的算法的不同步骤。</li>
+<li><strong>保护算法结构：</strong> 模板方法通过将算法的关键步骤放在模板方法中，保护了整个算法的结构。子类只需要关注实现自己特定的步骤，而不需要担心算法的整体结构。</li>
+<li><strong>提高代码复用性：</strong> 模板方法模式有助于提高代码的复用性。算法的框架由父类提供，而具体步骤的实现由子类完成，这使得相同的算法框架可以在不同的子类中重复使用。</li>
+<li><strong>反向的控制结构：</strong> 模板方法导致了一种反向的控制结构，即由高层模块（父类）来控制整个算法的执行流程，而低层模块（子类）负责实现具体的步骤。</li>
+<li><strong>扩展性：</strong> 模板方法模式提供了一种扩展的机制。通过添加新的子类并实现特定步骤的具体实现，可以轻松扩展算法，而不需要修改模板方法的结构。</li>
+</ol>
+<h3 id="探讨模板方法模式中可变部分的设计方案"><a href="#探讨模板方法模式中可变部分的设计方案" class="headerlink" title="探讨模板方法模式中可变部分的设计方案"></a>探讨模板方法模式中可变部分的设计方案</h3><p>在模板方法模式中，可变部分指的是算法中具体步骤的实现，这部分由子类来负责。设计这部分时，需要考虑如何在父类中定义框架，同时保留足够的灵活性，使得子类可以根据自己的需要进行定制。</p>
+<ol>
+<li><strong>抽象方法：</strong> 在父类中声明抽象方法，由子类负责具体实现。这是模板方法模式的核心特点，子类必须提供对应的实现。抽象方法强制子类提供某些具体步骤的实现，确保了算法的一致性。</li>
+<li><strong>具体方法（可选重写）：</strong> 在父类中提供一些具体实现的方法，子类可以选择性地重写这些方法。这样，子类可以选择性地覆盖某些步骤的实现，而不是完全从头开始实现整个算法。</li>
+<li><strong>钩子方法（默认实现）：</strong> 在父类中提供一些默认实现的方法，子类可以选择性地覆盖这些方法。这样，子类可以根据需要覆盖或者直接使用父类提供的默认实现。</li>
+<li><strong>回调机制：</strong> 使用回调机制，允许子类提供一些回调函数，父类在适当的时机调用这些回调函数。这样，子类可以通过回调来定制算法中的某些步骤。</li>
+</ol>
+<p><em>钩子 相信大家曾经有听到过，但是可能一直不太理解，<strong>它是一种被声明在抽象类中的方法，但只有空的或者默认的实现</strong>。 钩子的存在，可以让子类有能力对算法的不同点进行挂钩。要不要挂钩由子类自行决定。</em></p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>蒸汽小锅
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://zqxg.github.io/2024/01/03/%E4%BF%A1%E6%81%AF%E7%B3%BB%E7%BB%9F%E5%88%86%E6%9E%90%E5%A4%8D%E4%B9%A0/" title="信息系统分析复习资料">http://zqxg.github.io/2024/01/03/信息系统分析复习/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag"># 设计模式</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/12/20/%E9%9D%A2%E8%AF%95%E9%A2%98/" rel="prev" title="面试题（持续更新）">
+      <i class="fa fa-chevron-left"></i> 面试题（持续更新）
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E6%95%B0%E6%8D%AE%E6%8A%BD%E8%B1%A1"><span class="nav-number">1.</span> <span class="nav-text">一、数据抽象</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81LSP"><span class="nav-number">2.</span> <span class="nav-text">二、LSP</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E7%9A%84%E4%B8%89%E5%A4%A7%E5%8E%9F%E5%88%99%EF%BC%9F"><span class="nav-number">2.1.</span> <span class="nav-text">面向对象的三大原则？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E9%87%8C%E6%B0%8F%E6%9B%BF%E6%8D%A2%E5%8E%9F%E5%88%99%EF%BC%88LSP%EF%BC%89%E5%8F%8A%E5%85%B6%E6%84%8F%E4%B9%89"><span class="nav-number">2.2.</span> <span class="nav-text">什么是里氏替换原则（LSP）及其意义?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%8ELSP%E8%A7%A3%E9%87%8A%E4%BB%80%E4%B9%88%E6%98%AF%E7%BB%A7%E6%89%BF%EF%BC%8C%E4%BB%80%E4%B9%88%E6%98%AF%E5%A4%9A%E6%80%81%EF%BC%9F"><span class="nav-number">2.3.</span> <span class="nav-text">从LSP解释什么是继承，什么是多态？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D%E9%81%B5%E5%BE%AALSP%E7%9A%84%E5%9B%9B%E7%A7%8D%E5%BD%A2%E5%BC%8F%EF%BC%9F"><span class="nav-number">2.4.</span> <span class="nav-text">介绍遵循LSP的四种形式？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E6%8A%BD%E8%B1%A1%E4%BE%9D%E8%B5%96%E5%8E%9F%E5%88%99"><span class="nav-number">3.</span> <span class="nav-text">三、抽象依赖原则</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E6%9C%89%E8%BF%99%E4%B8%AA%E5%8E%9F%E5%88%99%E4%BB%A5%E5%8F%8A%E5%85%B6%E5%AE%9A%E4%B9%89%EF%BC%9F"><span class="nav-number">3.1.</span> <span class="nav-text">为什么要有这个原则以及其定义？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8A%BD%E8%B1%A1%E4%BE%9D%E8%B5%96%E5%8E%9F%E5%88%99%E7%9A%84%E4%BD%BF%E8%83%BD%E5%B7%A5%E5%85%B7%E6%9C%89%E4%BB%80%E4%B9%88%E7%89%B9%E7%82%B9%EF%BC%9F"><span class="nav-number">3.2.</span> <span class="nav-text">抽象依赖原则的使能工具有什么特点？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BD%BF%E8%83%BD%E5%B7%A5%E5%85%B7%E8%A2%AB%E7%A7%B0%E4%B8%BA%E6%8E%A7%E5%88%B6%E5%8F%8D%E8%BD%AC%E5%B7%A5%E5%85%B7%E5%AE%B9%E5%99%A8%EF%BC%8C%E4%B8%BA%E4%BB%80%E4%B9%88%E6%8E%A7%E5%88%B6%E5%8F%8D%E8%BD%AC%E5%B7%A5%E5%85%B7%E5%AE%B9%E5%99%A8%E4%B8%8E%E6%8E%A7%E5%88%B6%E5%8F%8D%E8%BD%AC%E6%B2%A1%E6%9C%89%E5%85%B3%E7%B3%BB%EF%BC%9F"><span class="nav-number">3.3.</span> <span class="nav-text">使能工具被称为控制反转工具容器，为什么控制反转工具容器与控制反转没有关系？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81god%E5%88%9B%E5%BB%BA%E5%AF%B9%E8%B1%A1%E5%87%BA%E7%8E%B0%E7%A9%BA%E6%8C%87%E9%92%88%E5%BC%82%E5%B8%B8%E7%9A%84%E5%8E%9F%E5%9B%A0%EF%BC%9F%EF%BC%885-6%E4%B8%AA%EF%BC%89"><span class="nav-number">4.</span> <span class="nav-text">四、god创建对象出现空指针异常的原因？（5~6个）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B%E8%8C%83%E5%BC%8F"><span class="nav-number">5.</span> <span class="nav-text">五、函数式编程范式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B%E8%8C%83%E5%BC%8F%E6%A0%B8%E5%BF%83%E8%A7%82%E5%BF%B5"><span class="nav-number">5.1.</span> <span class="nav-text">函数式编程范式核心观念</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFlambda%E8%A1%A8%E8%BE%BE%E5%BC%8F%EF%BC%9F"><span class="nav-number">5.2.</span> <span class="nav-text">什么是lambda表达式？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88Scame%E8%AF%AD%E8%A8%80%E9%87%8C%E7%94%A8%E9%80%92%E5%BD%92%E5%AE%9E%E7%8E%B0%E5%BE%AA%E7%8E%AF%EF%BC%9F"><span class="nav-number">5.3.</span> <span class="nav-text">为什么Scame语言里用递归实现循环？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%97%E4%B8%BE%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80%E4%B8%AD%E7%9A%84%E5%B8%B8%E8%A7%81%E7%9A%84%E7%89%B9%E7%82%B9%EF%BC%9F"><span class="nav-number">5.4.</span> <span class="nav-text">列举函数式编程语言中的常见的特点？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E9%AB%98%E9%98%B6%E5%87%BD%E6%95%B0"><span class="nav-number">6.</span> <span class="nav-text">六、高阶函数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E9%AB%98%E9%98%B6%E5%87%BD%E6%95%B0%EF%BC%9F"><span class="nav-number">6.1.</span> <span class="nav-text">什么是高阶函数？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%AD%E5%8C%85"><span class="nav-number">6.2.</span> <span class="nav-text">闭包</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#java%E8%AF%AD%E8%A8%80%E9%97%AD%E5%8C%85%E7%9A%84%E6%A6%82%E5%BF%B5"><span class="nav-number">6.3.</span> <span class="nav-text">java语言闭包的概念</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%83%E3%80%81%E5%87%BD%E6%95%B0%E6%8E%A5%E5%8F%A3"><span class="nav-number">7.</span> <span class="nav-text">七、函数接口</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E8%A1%8C%E4%B8%BA%E5%8F%82%E6%95%B0%E5%8C%96%EF%BC%9F"><span class="nav-number">7.1.</span> <span class="nav-text">什么是行为参数化？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A1%8C%E4%B8%BA%E5%8F%82%E6%95%B0%E5%8C%96%E7%9A%84%E6%84%8F%E4%B9%89"><span class="nav-number">7.2.</span> <span class="nav-text">行为参数化的意义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8Djava%E5%87%BD%E6%95%B0%E7%9A%84%E6%8E%A5%E5%8F%A3%EF%BC%8C%E7%9B%AE%E6%A0%87%E7%B1%BB%E5%9E%8B-p20"><span class="nav-number">7.3.</span> <span class="nav-text">介绍java函数的接口，目标类型 p20</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%AA%E6%9C%89%E5%94%AF%E4%B8%80%E6%8A%BD%E8%B1%A1%E6%96%B9%E6%B3%95%E7%9A%84%E6%8E%A5%E5%8F%A3%EF%BC%9F%EF%BC%88%E7%8B%AC%E7%AB%8B%E5%AD%90%E7%B1%BB%E5%9E%8B%EF%BC%8C%E5%91%BD%E5%90%8D%E7%B1%BB%EF%BC%8Clambda%E8%A1%A8%E8%BE%BE%E5%BC%8F%EF%BC%89"><span class="nav-number">7.4.</span> <span class="nav-text">只有唯一抽象方法的接口？（独立子类型，命名类，lambda表达式）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%AB%E3%80%81%E6%A1%86%E6%9E%B6%E8%AE%BE%E8%AE%A1%E8%80%85"><span class="nav-number">7.5.</span> <span class="nav-text">八、框架设计者</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E6%A1%86%E6%9E%B6%EF%BC%9F%E4%BB%8B%E7%BB%8D%E6%A1%86%E6%9E%B6%E5%92%8C%E5%B7%A5%E5%85%B7%E7%AE%B1%E4%B9%8B%E9%97%B4%E7%9A%84%E4%B8%8D%E5%90%8C"><span class="nav-number">7.6.</span> <span class="nav-text">什么是框架？介绍框架和工具箱之间的不同</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D%E4%B8%80%E4%B8%8B%E6%8E%A7%E5%88%B6%E5%8F%8D%E8%BD%AC%E3%80%81%E6%80%8E%E6%A0%B7%E8%AE%A4%E8%AF%86%E5%92%8C%E7%90%86%E8%A7%A3%E6%8E%A7%E5%88%B6%E5%8F%8D%E8%BD%AC"><span class="nav-number">7.7.</span> <span class="nav-text">介绍一下控制反转、怎样认识和理解控制反转</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8Djava%E9%87%8C%E5%9B%9E%E8%B0%83%E5%87%BD%E6%95%B0%E7%9A%84%E6%A6%82%E5%BF%B5%E5%8F%8A%E5%85%B6%E7%89%B9%E7%82%B9"><span class="nav-number">7.8.</span> <span class="nav-text">介绍java里回调函数的概念及其特点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9B%9E%E8%B0%83%E6%9C%BA%E5%88%B6%E4%B8%8E%E6%A1%86%E6%9E%B6%E5%85%B3%E7%B3%BB"><span class="nav-number">7.9.</span> <span class="nav-text">回调机制与框架关系</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B9%9D%E3%80%81%E5%A5%BD%E8%8E%B1%E5%9D%9E%E6%B3%95%E5%88%99"><span class="nav-number">8.</span> <span class="nav-text">九、好莱坞法则</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%A5%BD%E8%8E%B1%E5%9D%9E%E6%B3%95%E5%88%99-p34"><span class="nav-number">8.1.</span> <span class="nav-text">什么是好莱坞法则 p34</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%B4%E6%98%8E%E5%9B%9E%E8%B0%83%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%A5%BD%E8%8E%B1%E5%9D%9E%E6%B3%95%E5%88%99%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">8.2.</span> <span class="nav-text">说明回调机制与好莱坞法则的关系</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A8%A1%E6%9D%BF%E6%96%B9%E6%B3%95%E5%AF%BC%E8%87%B4%E4%B8%80%E7%A7%8D%E5%8F%8D%E5%90%91%E7%9A%84%E6%8E%A7%E5%88%B6%E7%BB%93%E6%9E%84%EF%BC%8C%E8%BF%99%E7%A7%8D%E7%BB%93%E6%9E%84%E6%9C%89%E6%97%B6%E8%A2%AB%E6%88%90%E4%B8%BA%E2%80%9C%E5%A5%BD%E8%8E%B1%E5%9D%9E%E6%B3%95%E5%88%99%E2%80%9D%EF%BC%8C%E5%AF%B9%E8%BF%99%E5%8F%A5%E8%AF%9D%E5%A6%82%E4%BD%95%E7%90%86%E8%A7%A3%EF%BC%9F"><span class="nav-number">8.3.</span> <span class="nav-text">模板方法导致一种反向的控制结构，这种结构有时被成为“好莱坞法则”，对这句话如何理解？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%81%E3%80%81%E6%A8%A1%E6%9D%BF%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F"><span class="nav-number">9.</span> <span class="nav-text">十、模板方法模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A8%A1%E6%9D%BF%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F%E9%80%82%E7%94%A8%E4%BA%8E%E4%BB%A5%E4%B8%8B%E4%B8%A4%E7%A7%8D%E4%B8%BB%E8%A6%81%E5%9C%BA%E6%99%AF%EF%BC%9A"><span class="nav-number">9.1.</span> <span class="nav-text">模板方法模式适用于以下两种主要场景：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E4%B8%8EOO%E5%85%B3%E7%B3%BB%EF%BC%9F"><span class="nav-number">9.2.</span> <span class="nav-text">设计模式与OO关系？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A8%A1%E6%9D%BF%E6%A8%A1%E5%BC%8F%E6%84%8F%E5%9B%BE"><span class="nav-number">9.3.</span> <span class="nav-text">模板模式意图</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8E%A2%E8%AE%A8%E6%A8%A1%E6%9D%BF%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F%E4%B8%AD%E5%8F%AF%E5%8F%98%E9%83%A8%E5%88%86%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%96%B9%E6%A1%88"><span class="nav-number">9.4.</span> <span class="nav-text">探讨模板方法模式中可变部分的设计方案</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="蒸汽小锅"
+      src="https://avatars.githubusercontent.com/u/116969040?s=400&u=4b1ffd148b531b77bdc04de4c3a790535c920689&v=4">
+  <p class="site-author-name" itemprop="name">蒸汽小锅</p>
+  <div class="site-description" itemprop="description">写点小东西</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">19</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">19</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zqxg" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zqxg" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">蒸汽小锅</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
